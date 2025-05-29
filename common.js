@@ -51,7 +51,12 @@ async function migrateFromLocalStorage() {
       storeCache.sites = settings.export();
       // Publish the merged site settings.
       await storeSet("sites", storeCache.sites);
-      api.storage.local.set({migrationComplete: 2});
+      try {
+            api.storage.local.set({migrationComplete: 2});
+      }
+      catch (error) {
+            console.warn(error);
+      }
     }
   })();
   await migrationTask;
@@ -158,7 +163,12 @@ export function getSiteSettings(site) {
 export function setSiteSettings(site, siteSettings) {
   settings.save(site, siteSettings);
   storeCache.sites = settings.export();
-  api.storage.local.set({sites: settings.exportLocal()});
+  try {
+    api.storage.local.set({sites: settings.exportLocal()});
+  }
+  catch(error) {
+    console.warn(error)
+  }
   return storeSet("sites", storeCache.sites);
 }
 
