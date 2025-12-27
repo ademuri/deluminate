@@ -1,7 +1,7 @@
 {
   "type": "module",
   "name": "deluminate",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "Invert the luminance of a website to make it easier on the eyes.",
   "scripts": {
     "lint": "eslint *.js",
@@ -11,7 +11,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/abstiles/deluminate.git"
+    "url": "git+https://github.com/ademuri/deluminate.git"
   },
   "keywords": [
     "chrome",
@@ -24,7 +24,7 @@
   "author": "Anjou Stiles",
   "license": "BSD-2-Clause",
   "bugs": {
-    "url": "https://github.com/abstiles/deluminate/issues"
+    "url": "https://github.com/ademuri/deluminate/issues"
   },
   "homepage": "https://deluminate.github.io",
   "devDependencies": {
