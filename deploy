@@ -23,7 +23,7 @@ function error {
 }
 
 # Process options, filter out positional arguments
-declare -a positional_args
+declare -a positional_args=()
 while (( $# )); do
 	case $1 in
 		--release) release_opt=true;;
@@ -41,7 +41,7 @@ unset positional_args
 
 function main {
 	local release=${release_opt-${RELEASE_DEFAULT}}
-	local package=$1
+	local package=${1:-}
 
 	if ! [[ -r $package ]]; then
 		die "Could not find package file '%s' for upload" "$package"
