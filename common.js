@@ -208,14 +208,16 @@ export function setDefaultModifiers(modifiers) {
 
 export function addSiteModifier(site, modifier) {
   const siteSettings = settings.load(site);
-  const mods = siteSettings.mods.union(new Set([modifier]));
+  const mods = new Set(siteSettings.mods);
+  mods.add(modifier);
   const newSettings = new SiteSettings(siteSettings.filter, mods);
   return setSiteSettings(site, newSettings);
 }
 
 export function delSiteModifier(site, modifier) {
   const siteSettings = settings.load(site);
-  const mods = siteSettings.mods.difference(new Set([modifier]));
+  const mods = new Set(siteSettings.mods);
+  mods.delete(modifier);
   const newSettings = new SiteSettings(siteSettings.filter, mods);
   return setSiteSettings(site, newSettings);
 }
