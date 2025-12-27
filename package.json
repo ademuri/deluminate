@@ -6,8 +6,9 @@
   "scripts": {
     "lint": "eslint *.js",
     "test": "mocha spec/common.spec.js",
-    "deploy": "./deploy --release",
-    "deploy-dev": "./deploy"
+    "package": "zip -r deluminate.zip . -x '*.git*' -x 'node_modules/*' -x 'spec/*' -x '*.zip' -x 'deploy*'",
+    "deploy": "npm run package && ./deploy deluminate.zip --release",
+    "deploy-dev": "npm run package && ./deploy deluminate.zip"
   },
   "repository": {
     "type": "git",
@@ -29,7 +30,7 @@
   "homepage": "https://deluminate.github.io",
   "devDependencies": {
     "@eslint/js": "^9.8.0",
-    "chrome-webstore-upload-cli": "^1.1.1",
+    "chrome-webstore-upload-cli": "^3.5.0",
     "eslint": "^9.8.0",
     "expect": "^29.7.0",
     "globals": "^15.9.0",
