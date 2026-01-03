@@ -7,3 +7,6 @@ node_modules/
 spec/**/*.xml
 
 .vscode/
+
+# Intermediate file for Gemini
+PLAN.md
