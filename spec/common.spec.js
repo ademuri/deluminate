@@ -212,4 +212,44 @@ describe("Url classifier", function() {
   it("reports about URLs as not allowed", function() {
     expect(isDisallowedUrl("about:blank")).toBe(true);
   });
+
+  it("reports view-source URLs as allowed (current behavior)", function() {
+    expect(isDisallowedUrl("view-source:https://www.example.com")).toBe(false);
+  });
+
+  it("reports file URLs as allowed", function() {
+    expect(isDisallowedUrl("file:///home/user/test.html")).toBe(false);
+  });
+});
+
+describe("Hierarchical settings matching", function() {
+  beforeEach("Reset settings", resetSiteSchemes);
+
+  it("matches subdomains to parent domain settings", function() {
+    setSiteScheme("example.com", "dim1");
+    // getSiteSettings uses settings.load which should find example.com for sub.example.com
+    // Wait, let's verify if load actually does hierarchical matching.
+    expect(getSiteSettings("sub.example.com").filter).toBe("dim1");
+  });
+
+  it("matches paths to domain settings", function() {
+    setSiteScheme("example.com", "dim2");
+    expect(getSiteSettings("example.com/some/path").filter).toBe("dim2");
+  });
+
+  it("matches specific path over domain", function() {
+    setSiteScheme("example.com", "dim1");
+    setSiteScheme("https://example.com/specific/path", "dim2");
+    
+    expect(getSiteSettings("example.com").filter).toBe("dim1");
+    expect(getSiteSettings("https://example.com/specific/path").filter).toBe("dim2");
+    expect(getSiteSettings("https://example.com/specific/path/deeper").filter).toBe("dim2");
+    expect(getSiteSettings("https://example.com/other").filter).toBe("dim1");
+  });
+
+  it("handles file URLs hierarchically", function() {
+    setSiteScheme("file:///home/user/", "dim3");
+    expect(getSiteSettings("file:///home/user/test.html").filter).toBe("dim3");
+    expect(getSiteSettings("file:///home/other/").filter).not.toBe("dim3");
+  });
 });
