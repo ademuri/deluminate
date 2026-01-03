@@ -8,6 +8,8 @@ spec/**/*.xml
 
 .vscode/
 
+# Gemini CLI
+.gemini/
 # Intermediate file for Gemini
 PLAN.md
 
