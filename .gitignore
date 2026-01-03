@@ -14,3 +14,5 @@ spec/**/*.xml
 PLAN.md
 
 coverage/
+pw-browsers/
+test-results/

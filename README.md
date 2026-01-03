@@ -83,3 +83,25 @@ The latest release is always available on the Chrome Web Store. Search for
 "Deluminate". The master branch always points to the latest Chrome Web Store
 release code. Check out the dev branch if you want to see the latest unreleased
 features, but only if you are willing to put up with more bugs.
+
+Development
+-----------
+
+### Running Tests
+
+This project uses `mocha` for unit tests and `playwright` for end-to-end integration tests.
+
+To run all tests:
+```bash
+npm run test:all
+```
+
+To run only unit tests:
+```bash
+npm test
+```
+
+To run only integration tests:
+```bash
+npm run test:e2e
+```
