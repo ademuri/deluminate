@@ -13,7 +13,7 @@ chrome = {
 
 describe("Popup options", () => {
   beforeAll(() => {
-    var optionsHtml = fs.readFileSync(
+    const optionsHtml = fs.readFileSync(
       path.join(__dirname, "..", "popup.html"));
     global.document = require('jsdom').jsdom(optionsHtml);
     global.window = document.defaultView;
@@ -27,8 +27,8 @@ describe("Popup options", () => {
     addSiteModifier('popup.deluminate.github.io', 'low-contrast');
 
     /* Have to reset onMakeDefault's closure of "site" to test this. */
-    var site = 'popup.deluminate.github.io';
-    var update = function() {};
+    const site = 'popup.deluminate.github.io';
+    const update = function() {};
     eval(String(onMakeDefault));
     onMakeDefault();
 
@@ -38,7 +38,7 @@ describe("Popup options", () => {
 
   it("reports site settings unchanged by default", function() {
     /* Have to reset onMakeDefault's closure of "site" to test this. */
-    var site = 'popup.deluminate.github.io';
+    const site = 'popup.deluminate.github.io';
     eval(String(changedFromDefault));
     expect(changedFromDefault()).toBe(false);
   });
@@ -46,7 +46,7 @@ describe("Popup options", () => {
   it("reports site settings changed when a scheme is changed", function() {
     setSiteScheme("popup.deluminate.github.io", "test-scheme");
     /* Have to reset changedFromDefault's closure of "site" to test this. */
-    var site = 'popup.deluminate.github.io';
+    const site = 'popup.deluminate.github.io';
     eval(String(changedFromDefault));
     expect(changedFromDefault()).toBe(true);
   });
@@ -54,7 +54,7 @@ describe("Popup options", () => {
   it("reports site settings changed when a modifier is changed", function() {
     addSiteModifier("popup.deluminate.github.io", 'low-contrast');
     /* Have to reset changedFromDefault's closure of "site" to test this. */
-    var site = 'popup.deluminate.github.io';
+    const site = 'popup.deluminate.github.io';
     eval(String(changedFromDefault));
     expect(changedFromDefault()).toBe(true);
   });
@@ -63,7 +63,7 @@ describe("Popup options", () => {
     setSiteScheme("popup.deluminate.github.io", "test-scheme");
     addSiteModifier("popup.deluminate.github.io", 'low-contrast');
     /* Have to reset changedFromDefault's closure of "site" to test this. */
-    var site = 'popup.deluminate.github.io';
+    const site = 'popup.deluminate.github.io';
     eval(String(changedFromDefault));
     expect(changedFromDefault()).toBe(true);
     resetSiteSchemes();

@@ -116,7 +116,7 @@ describe("Site manipulation functions", function() {
   });
 
   it("can extract a hostname from a full URL", function() {
-    var testUrl = "https://subdomain.example.com:8080/path/to/page?ans=42";
+    const testUrl = "https://subdomain.example.com:8080/path/to/page?ans=42";
     expect(siteFromUrl(testUrl)).toEqual("subdomain.example.com");
   });
 
@@ -126,20 +126,20 @@ describe("Site manipulation functions", function() {
   });
 
   it("can override the default scheme for a site", function() {
-    var expectedScheme = "dim3";
+    const expectedScheme = "dim3";
     setSiteScheme("subdomain.example.com", expectedScheme);
     expect(getSiteSettings("subdomain.example.com").filter).toEqual(expectedScheme);
   });
 
   it("can reset all site scheme overrides", async function() {
-    var expectedScheme = getSiteSettings().filter;
+    const expectedScheme = getSiteSettings().filter;
     setSiteScheme("subdomain.example.com", "dim3");
     await resetSiteSchemes();
     expect(getSiteSettings("subdomain.example.com").filter).toEqual(expectedScheme);
   });
 
   it("gets no site modifiers for a site by default", function() {
-    var expectedModifiers = getSiteSettings().mods;
+    const expectedModifiers = getSiteSettings().mods;
     expect(getSiteSettings("example.com").mods).toEqual(expectedModifiers);
   });
 
@@ -152,7 +152,7 @@ describe("Site manipulation functions", function() {
   });
 
   it("can remove site modifiers", function() {
-    var expectedModifiers = 'low_contrast dynamic'
+    const expectedModifiers = 'low_contrast dynamic'
     addSiteModifier("example.com", 'low_contrast');
     addSiteModifier("example.com", 'killbg');
     addSiteModifier("example.com", 'dynamic');

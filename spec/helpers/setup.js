@@ -1,6 +1,6 @@
 const path = require('path')
-var reporters = require('jasmine-reporters');
-var junitReporter = new reporters.JUnitXmlReporter({
+const reporters = require('jasmine-reporters');
+const junitReporter = new reporters.JUnitXmlReporter({
   savePath: path.join(__dirname, '..', 'junitresults'),
   consolidateAll: false
 });
