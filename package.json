@@ -29,7 +29,7 @@
   "homepage": "https://deluminate.github.io",
   "devDependencies": {
     "@eslint/js": "^9.8.0",
-    "chrome-webstore-upload-cli": "^1.1.1",
+    "chrome-webstore-upload-cli": "^3.5.0",
     "eslint": "^9.8.0",
     "globals": "^15.9.0",
     "jasmine": "^2.5.3",
