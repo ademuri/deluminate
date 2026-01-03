@@ -22,13 +22,20 @@ jobs:
         run: npm run lint
   Test:
     runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.57.0-noble
+      # Run as root to fix permission issues with Github Actions workspace.
+      # SYS_ADMIN is recommended for running Chrome in Docker.
+      options: --user root --cap-add=SYS_ADMIN
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version-file: package.json
           cache: npm
-      - name: install
+      - name: Install
         run: npm ci || npm install
-      - name: build
+      - name: Run unit tests
         run: npm run test
+      - name: Run integration tests
+        run: npm run test:e2e
