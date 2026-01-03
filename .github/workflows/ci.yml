@@ -17,7 +17,7 @@ jobs:
           node-version-file: package.json
           cache: npm
       - name: install
-        run: npm ci || npm install
+        run: npm ci
       - name: lint
         run: npm run lint
   Test:
@@ -34,7 +34,7 @@ jobs:
           node-version-file: package.json
           cache: npm
       - name: Install
-        run: npm ci || npm install
+        run: npm ci
       - name: Run unit tests
         run: npm run test
       - name: Run integration tests
