@@ -96,4 +96,86 @@ describe("Content Logic", () => {
     
     expect(logic.classifyTextColor(document)).toBe("dark");
   });
+
+  it("markCssImages detects background image types", () => {
+    const div = document.createElement('div');
+    const originalGetComputedStyle = window.getComputedStyle;
+    
+    // PNG
+    window.getComputedStyle = () => ({ 'background-image': 'url("image.png")' });
+    logic.markCssImages(div);
+    expect(div.getAttribute('deluminate_imageType')).toBe('png');
+
+    // JPG
+    window.getComputedStyle = () => ({ 'background-image': 'url("image.jpg")' });
+    logic.markCssImages(div);
+    expect(div.getAttribute('deluminate_imageType')).toBe('jpg');
+
+    // SVG
+    window.getComputedStyle = () => ({ 'background-image': 'url("data:image/svg+xml;base64,...")' });
+    logic.markCssImages(div);
+    expect(div.getAttribute('deluminate_imageType')).toBe('svg');
+
+    // Unknown
+    window.getComputedStyle = () => ({ 'background-image': 'url("unknown.xyz")' });
+    logic.markCssImages(div);
+    expect(div.getAttribute('deluminate_imageType')).toBe('unknown');
+
+    // None
+    window.getComputedStyle = () => ({ 'background-image': 'none' });
+    logic.markCssImages(div);
+    expect(div.hasAttribute('deluminate_imageType')).toBe(false);
+
+    window.getComputedStyle = originalGetComputedStyle;
+  });
+
+  it("classifyTextColor uses TreeWalker when few paragraphs found", () => {
+    // Clear paragraphs
+    document.body.innerHTML = '<div><span>Lots of text here to trigger the TreeWalker logic. </span></div>'.repeat(100);
+    global.mockImageData = [255, 255, 255, 255]; // White text
+    
+    global.getComputedStyle = (el) => {
+        return {
+            color: 'white-test',
+            visibility: 'visible',
+            display: 'block'
+        };
+    };
+
+    expect(logic.classifyTextColor(document)).toBe("light");
+  });
+
+  it("checksPreferredScheme detects media query", () => {
+    // Mock document.styleSheets
+    Object.defineProperty(document, 'styleSheets', {
+        value: [{
+            media: ['(prefers-color-scheme: dark)'],
+            rules: []
+        }],
+        configurable: true
+    });
+    expect(logic.checksPreferredScheme()).toBe(true);
+
+    // Mock document.styleSheets with rules
+    Object.defineProperty(document, 'styleSheets', {
+        value: [{
+            media: [],
+            rules: [{
+                media: ['(prefers-color-scheme: dark)']
+            }]
+        }],
+        configurable: true
+    });
+    expect(logic.checksPreferredScheme()).toBe(true);
+
+    // Mock document.styleSheets with no match
+    Object.defineProperty(document, 'styleSheets', {
+        value: [{
+            media: [],
+            rules: []
+        }],
+        configurable: true
+    });
+    expect(logic.checksPreferredScheme()).toBe(false);
+  });
 });
