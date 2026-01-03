@@ -7,10 +7,6 @@ let rootWatcher;
 const rootAttribute = "hc";
 
 const {
-  containsAny,
-  colorToRGBA,
-  colorValenceRaw,
-  colorValence,
   markCssImages,
   classifyTextColor,
   checksPreferredScheme
