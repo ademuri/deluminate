@@ -6,6 +6,16 @@ let newImageHandler;
 let rootWatcher;
 const rootAttribute = "hc";
 
+const {
+  containsAny,
+  colorToRGBA,
+  colorValenceRaw,
+  colorValence,
+  markCssImages,
+  classifyTextColor,
+  checksPreferredScheme
+} = window.deluminateLogic || {};
+
 function onExtensionMessage(request, sender, sendResponse) {
   if (chrome.runtime.lastError) {
     console.log(`Failed to communicate init request`);
@@ -176,41 +186,6 @@ function onEvent(evt) {
   return true;
 }
 
-function containsAny(haystack, needleList) {
-  for (let i = 0; i < needleList.length; ++i) {
-    if (haystack.indexOf(needleList[i]) >= 0) {
-      return true;
-    }
-  }
-  return false;
-}
-
-function markCssImages(tag) {
-  const bgImage = window.getComputedStyle(tag)['background-image'];
-  let imageType;
-  if (containsAny(bgImage, ['data:image/png', '.png', '.PNG'])) {
-    imageType = 'png';
-  } else if (containsAny(bgImage, ['.gif', '.GIF'])) {
-    imageType = 'gif';
-  } else if (containsAny(bgImage,
-      ['data:image/jpeg', '.jpg', '.JPG', '.jpeg', '.JPEG'])) {
-    imageType = 'jpg';
-  } else if (containsAny(bgImage,
-      ['data:image/svg', '.svg', '.SVG'])) {
-    imageType = 'svg';
-  } else if (containsAny(bgImage,
-      ['data:image/webp', '.webp'])) {
-    imageType = 'webp';
-  } else if (containsAny(bgImage, ['url', 'data:image'])) {
-    imageType = 'unknown';
-  }
-  if (imageType) {
-    tag.setAttribute('deluminate_imageType', imageType);
-  } else {
-    tag.removeAttribute('deluminate_imageType');
-  }
-}
-
 function detectAnimatedGif(tag) {
   if (checkDisconnected()) return;
   chrome.runtime.sendMessage(
@@ -227,45 +202,6 @@ function detectAnimatedGif(tag) {
       }
     });
 }
-
-/*
-function getPixels2d(canvas) {
-  const context = canvas.getContext('2d');
-  if (!context) return null;
-  return context.getImageData(0, 0, canvas.width, canvas.height).data;
-}
-
-async function getPixelsWebGL(canvas) {
-  const context = canvas.getContext("webgl2") || canvas.getContext("webgl");
-  if (!context) return null;
-  const pixels = new Uint8ClampedArray(context.drawingBufferWidth * context.drawingBufferHeight * 4);
-  await new Promise(resolve => requestAnimationFrame(resolve));
-  context.readPixels(0, 0, context.drawingBufferWidth,
-    context.drawingBufferHeight, context.RGBA, context.UNSIGNED_BYTE,
-    pixels,
-  );
-  return pixels;
-}
-
-async function classifyCanvasColor(canvas) {
-  const pixels = canvas.getContext("2d") ? getPixels2d(canvas)
-    : canvas.getContext('webgl2') ? await getPixelsWebGL(canvas)
-    : canvas.getContext('webgl') ? await getPixelsWebGL(canvas)
-    : null
-    ;
-  if (!pixels) return null;
-
-  const pixelTypes = [0, 0, 0];
-  for (let i = 0; i < pixels.length - 3; i += 4) {
-    const pixelType = colorValenceRaw(pixels[i], pixels[i+1], pixels[i+2], pixels[i+3]);
-    pixelTypes[pixelType + 1]++;
-  }
-  return (pixelTypes[2] > pixelTypes[0] + pixelTypes[1]) ? "light"
-    : (pixelTypes[0] > pixelTypes[1] + pixelTypes[2]) ? "dark"
-    : null
-    ;
-}
-/**/
 
 let deepImageProcessingComplete = false;
 function deepImageProcessing() {
@@ -308,102 +244,6 @@ function log() {
   if (checkDisconnected()) return;
   const msg = Array.prototype.slice.call(arguments).join(' ');
   chrome.runtime.sendMessage({'log': msg});
-}
-
-const grayMargin = 64;
-const alphaFactor = (255 + grayMargin) / 255;
-// Cheap and simple calculation to classify colors as light, dark or ambiguous.
-// Return -1 for dark, 0 for gray, 1 for light.
-function colorValence(color) {
-  return colorValenceRaw(...colorToRGBA(color));
-}
-
-function colorValenceRaw(r, g, b, a) {
-  // Simple YIQ luminance calculation, scaled to (255 * 3) for convenience.
-  const lum = ((r*229)+(g*449)+(b*87))/255;
-  // Alpha transparency widens the effective gray range from the middle third
-  // (gray margin excluded) at 100% opaque to the whole range at 0% opaque.
-  const alphaRange = a * alphaFactor;
-  const grayMin = alphaRange, grayMax = (255 * 3) - alphaRange;
-  return lum < grayMin ? -1
-    : lum > grayMax ? 1
-    : 0
-    ;
-}
-
-function classifyTextColor() {
-  const paras = new Set(document.querySelectorAll('p:not(footer *)'));
-  // Text with line breaks is *probably* basic writing and not fancy labels.
-  for (const br of document.querySelectorAll('br:not(footer *)')) {
-    paras.add(br.parentElement);
-  }
-  const windowHeight = window.innerHeight;
-  const charTypes = [0, 0, 0];
-  let total = 0;
-  for (const p of paras) {
-    const {color, display, visibility} = getComputedStyle(p);
-    if (!color || display === "none" || visibility !== "visible") continue;
-    const {width = 0, height = 0, top = 0} = p.getBoundingClientRect();
-    if (width * height <= 0 || top > windowHeight) continue;
-    const text = p.textContent;
-    charTypes[colorValence(color) + 1] += text.length;
-    total += text.length;
-    // Arbitrarily chosen good-enough threshold.
-    if (total > 4096) break;
-  }
-
-  // If the previous selectors didn't find much of the page's text, use a
-  // treeWalker.
-  if (total <= 4096
-      && total < (document.documentElement.textContent.length * 0.1)
-  ) {
-    const treeWalker = document.createTreeWalker(
-      document.querySelector("body"),
-      NodeFilter.SHOW_TEXT,
-    );
-
-    while (treeWalker.nextNode()) {
-      const text = treeWalker.currentNode;
-      const elem = text.parentElement;
-      const {color, display, visibility} = getComputedStyle(elem);
-      if (!color || display === "none" || visibility !== "visible") continue;
-      const {width = 0, height = 0, top = 0} = elem.getBoundingClientRect();
-      if (width * height <= 0 || top > windowHeight) continue;
-      charTypes[colorValence(color) + 1] += text.length;
-      total += text.length;
-      // Arbitrarily chosen good-enough threshold.
-      if (total > 4096) break;
-    }
-  }
-  // If light text is a supermajority of the text, we'll say this page uses
-  // light text overall.
-  return (charTypes[2] > charTypes[0] + charTypes[1]) ? "light"
-    : (charTypes[0] > charTypes[1] + charTypes[2]) ? "dark"
-    : null
-    ;
-}
-
-function checksPreferredScheme() {
-  for (const css of document?.styleSheets ?? []) {
-    try {
-      for (const m of css.media ?? []) {
-        if (m.includes("prefers-color-scheme")) {
-          return true;
-        }
-      }
-      const cssRules = css.rules;
-      for (const rule of cssRules) {
-        for (const m of rule.media ?? []) {
-          if (m.includes("prefers-color-scheme")) {
-            return true;
-          }
-        }
-      }
-    } catch {
-      // Exceptions thrown here for CORS security errors..
-    }
-  }
-  return false;
 }
 
 function init() {
@@ -473,30 +313,6 @@ function checkDisconnected() {
   }
   return false;
 }
-
-const colorToRGBA = (function() {
-  // Use a canvas to normalize colors for computing.
-  const canvas = document.createElement('canvas');
-  canvas.width = canvas.height = 1;
-  const ctx = canvas.getContext('2d', {willReadFrequently: true});
-
-  const cache = {};
-  function memoize(f) {
-    return (key) => {
-      if (!(key in cache)) {
-        cache[key] = f(key);
-      }
-      return cache[key];
-    }
-  }
-
-  return memoize(function(c) {
-    ctx.clearRect(0, 0, 1, 1);
-    ctx.fillStyle = c;
-    ctx.fillRect(0, 0, 1, 1);
-    return [...ctx.getImageData(0, 0, 1, 1).data];
-  });
-})();
 
 init();
 })();

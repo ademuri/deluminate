@@ -46,7 +46,7 @@ async function injectTabJS(tab) {
   try {
     await chrome.scripting.executeScript({
       target: {tabId: tab.id, allFrames: true},
-      files: ["deluminate.js"],
+      files: ["content_logic.js", "deluminate.js"],
       injectImmediately: true,
     });
     console.log(`Done injecting JS into tab: ${tabSummary(tab)}`);
