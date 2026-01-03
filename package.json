@@ -37,7 +37,7 @@
     "chrome-webstore-upload-cli": "^3.5.0",
     "eslint": "^9.8.0",
     "expect": "^29.7.0",
-    "globals": "^15.9.0",
+    "globals": "^17.0.0",
     "jsdom": "^24.1.1",
     "mocha": "^10.7.3",
     "mock-local-storage": "^1.0.2"
