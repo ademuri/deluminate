@@ -10,3 +10,5 @@ spec/**/*.xml
 
 # Intermediate file for Gemini
 PLAN.md
+
+coverage/
