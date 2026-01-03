@@ -14,7 +14,7 @@ function initSettings() {
   }
 }
 
-async function onForget() {
+export async function onForget() {
   await resetSiteSchemes();
   loadSettingsDisplay((await syncStore()).export());
 }
@@ -87,7 +87,7 @@ function loadSettingsDisplay(store) {
   }
 }
 
-async function init() {
+export async function init() {
   const store = await syncStore();
   initSettings();
   $('forget').addEventListener('click', onForget, false);
@@ -95,5 +95,7 @@ async function init() {
   loadSettingsDisplay(store.export());
 }
 
-window.addEventListener('load', init, false);
-document.addEventListener('DOMContentLoaded', onLinkClick);
+if (typeof window !== 'undefined') {
+  window.addEventListener('load', init, false);
+  document.addEventListener('DOMContentLoaded', onLinkClick);
+}

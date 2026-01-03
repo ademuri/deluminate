@@ -5,7 +5,7 @@
   "description": "Invert the luminance of a website to make it easier on the eyes.",
   "scripts": {
     "lint": "eslint *.js",
-    "test": "c8 mocha spec/common.spec.js",
+    "test": "c8 mocha 'spec/**/*.js'",
     "package": "zip -r deluminate.zip . -x '*.git*' -x 'node_modules/*' -x 'spec/*' -x '*.zip' -x 'deploy*'",
     "deploy": "npm run package && ./deploy deluminate.zip --release",
     "deploy-dev": "npm run package && ./deploy deluminate.zip"

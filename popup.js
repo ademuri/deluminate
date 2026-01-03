@@ -123,7 +123,7 @@ function onSettings() {
   chrome.tabs.create({active: true, url: "options.html"});
 }
 
-async function init() {
+export async function init() {
   addRadioListeners('scheme');
   const optChecks = document.querySelectorAll('#inversion-options input');
   for (const input of optChecks) {
@@ -200,6 +200,8 @@ function onEvent(evt) {
   return true;
 }
 
-window.addEventListener('load', init, false);
-document.addEventListener('DOMContentLoaded', onLinkClick);
-document.addEventListener('keydown', onEvent, false);
+if (typeof window !== 'undefined') {
+    window.addEventListener('load', init, false);
+    document.addEventListener('DOMContentLoaded', onLinkClick);
+    document.addEventListener('keydown', onEvent, false);
+}
