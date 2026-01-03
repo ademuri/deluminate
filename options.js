@@ -41,7 +41,6 @@ function loadSettingsDisplay(store) {
   function makeTag(tag, ...contents) {
     const element = document.createElement(tag);
     for (const child of contents) {
-      console.log(`child: ${child} - ${typeof child}`);
       try {
         element.appendChild(
           typeof child === "string" ? document.createTextNode(child)
