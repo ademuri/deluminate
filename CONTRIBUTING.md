@@ -50,3 +50,15 @@ To run only integration tests:
 ```bash
 npm run test:e2e
 ```
+
+## Releasing
+
+Release checklist:
+
+- Bump version number in `manifest.json`
+- Update `CHANGELOG.md`
+- Commit changes
+- Tag commit `git tag vX.Y.Z`
+- Run `npm run package`
+- Load into local Chrome and test
+- Upload to Chrome Web Store
