@@ -1,17 +1,11 @@
-
 import { describe, it, beforeEach, afterEach } from 'mocha';
 import assert from 'node:assert';
 import { JSDOM } from 'jsdom';
 import fs from 'fs';
 import path from 'path';
 
-// We need to load the modules. Since they are ES modules, we can import them directly 
-// if we were running in a browser, but in Node/Mocha we are loading them into JSDOM.
-// For unit testing specific functions, we can rely on how spec/content_logic.spec.js does it,
-// or import the source files if they are pure JS.
-// checking spec/content_logic.spec.js might be useful first, but I'll try to import directly for the cache test.
-
-import { colorToRGBA } from '../content_logic.js';
+const contentLogicPath = path.resolve('content_logic.js');
+const contentLogicCode = fs.readFileSync(contentLogicPath, 'utf8');
 
 const deluminatePath = path.resolve('deluminate.js');
 const deluminateCode = fs.readFileSync(deluminatePath, 'utf8');
@@ -19,7 +13,39 @@ const deluminateCode = fs.readFileSync(deluminatePath, 'utf8');
 describe('Performance & Resource Usage', () => {
 
   describe('Memory Leaks', () => {
+    let dom;
+    let window;
+    let colorToRGBA;
+
+    beforeEach(() => {
+        dom = new JSDOM('<!DOCTYPE html>', { runScripts: "dangerously" });
+        window = dom.window;
+        
+        // Mock canvas context required by colorToRGBA
+        window.HTMLCanvasElement.prototype.getContext = function() {
+            return {
+                clearRect: () => {},
+                fillRect: () => {},
+                getImageData: () => ({ data: [0,0,0,0] })
+            };
+        };
+
+        const script = window.document.createElement('script');
+        script.textContent = contentLogicCode;
+        window.document.body.appendChild(script);
+        
+        if (window.deluminateLogic && window.deluminateLogic.colorToRGBA) {
+            colorToRGBA = window.deluminateLogic.colorToRGBA;
+        } else {
+            throw new Error("Failed to load colorToRGBA from content_logic.js in JSDOM");
+        }
+    });
+
     it('colorToRGBA cache should not grow unbounded', () => {
+      // Ensure we have the function and cache
+      assert.ok(colorToRGBA, "colorToRGBA should be defined");
+      assert.ok(colorToRGBA._cache, "colorToRGBA should have a _cache property");
+
       const initialSize = Object.keys(colorToRGBA._cache).length;
       
       // Simulate processing many distinct colors

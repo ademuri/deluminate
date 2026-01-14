@@ -1,16 +1,34 @@
-import * as logic from '../content_logic.js';
+import * as fs from 'fs';
+import * as path from 'path';
 import { expect } from 'expect';
 import { JSDOM } from 'jsdom';
 
 describe("Content Logic", () => {
   let dom;
+  let logic;
 
   beforeEach(() => {
-    dom = new JSDOM('<!DOCTYPE html><html><body><p id="p1">Hello World</p></body></html>');
+    // Enable runScripts to execute the injected script
+    dom = new JSDOM('<!DOCTYPE html><html><body><p id="p1">Hello World</p></body></html>', {
+        runScripts: "dangerously",
+        resources: "usable"
+    });
+    
     global.window = dom.window;
     global.document = dom.window.document;
     global.NodeFilter = dom.window.NodeFilter;
+
+    // Load content_logic.js script content
+    const scriptContent = fs.readFileSync(path.resolve('content_logic.js'), 'utf8');
     
+    // Create script element and inject
+    const scriptEl = dom.window.document.createElement('script');
+    scriptEl.textContent = scriptContent;
+    dom.window.document.body.appendChild(scriptEl);
+
+    // Get the exposed logic from window
+    logic = dom.window.deluminateLogic;
+
     // Mock getContext before any colorToRGBA calls
     dom.window.HTMLCanvasElement.prototype.getContext = function(type) {
         if (type === '2d') {
@@ -46,7 +64,7 @@ describe("Content Logic", () => {
     };
 
     // Clear the cache
-    if (logic.colorToRGBA._cache) {
+    if (logic && logic.colorToRGBA && logic.colorToRGBA._cache) {
         for (const key in logic.colorToRGBA._cache) {
             delete logic.colorToRGBA._cache[key];
         }
@@ -99,40 +117,51 @@ describe("Content Logic", () => {
 
   it("markCssImages detects background image types", () => {
     const div = document.createElement('div');
-    const originalGetComputedStyle = window.getComputedStyle;
+    // Important: We need to override window.getComputedStyle in the JSDOM window
+    // because logic.markCssImages calls window.getComputedStyle(tag)
+    const originalGetComputedStyle = dom.window.getComputedStyle;
     
+    // Helper to mock style
+    const mockStyle = (styleObj) => {
+        dom.window.getComputedStyle = () => styleObj;
+    };
+
     // PNG
-    window.getComputedStyle = () => ({ 'background-image': 'url("image.png")' });
+    mockStyle({ 'background-image': 'url("image.png")' });
     logic.markCssImages(div);
     expect(div.getAttribute('deluminate_imageType')).toBe('png');
 
     // JPG
-    window.getComputedStyle = () => ({ 'background-image': 'url("image.jpg")' });
+    mockStyle({ 'background-image': 'url("image.jpg")' });
     logic.markCssImages(div);
     expect(div.getAttribute('deluminate_imageType')).toBe('jpg');
 
     // SVG
-    window.getComputedStyle = () => ({ 'background-image': 'url("data:image/svg+xml;base64,...")' });
+    mockStyle({ 'background-image': 'url("data:image/svg+xml;base64,...")' });
     logic.markCssImages(div);
     expect(div.getAttribute('deluminate_imageType')).toBe('svg');
 
     // Unknown
-    window.getComputedStyle = () => ({ 'background-image': 'url("unknown.xyz")' });
+    mockStyle({ 'background-image': 'url("unknown.xyz")' });
     logic.markCssImages(div);
     expect(div.getAttribute('deluminate_imageType')).toBe('unknown');
 
     // None
-    window.getComputedStyle = () => ({ 'background-image': 'none' });
+    mockStyle({ 'background-image': 'none' });
     logic.markCssImages(div);
     expect(div.hasAttribute('deluminate_imageType')).toBe(false);
 
-    window.getComputedStyle = originalGetComputedStyle;
+    dom.window.getComputedStyle = originalGetComputedStyle;
   });
 
   it("classifyTextColor uses TreeWalker when few paragraphs found", () => {
     // Clear paragraphs
     document.body.innerHTML = '<div><span>Lots of text here to trigger the TreeWalker logic. </span></div>'.repeat(100);
     global.mockImageData = [255, 255, 255, 255]; // White text
+    
+    // Override global.getComputedStyle used by classifyTextColor
+    // Note: classifyTextColor uses getComputedStyle from global scope (which we mocked in beforeEach)
+    // OR it uses the one from window. We mocked global.getComputedStyle in beforeEach.
     
     global.getComputedStyle = (el) => {
         return {

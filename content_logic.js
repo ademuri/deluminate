@@ -1,4 +1,4 @@
-export function containsAny(haystack, needleList) {
+function containsAny(haystack, needleList) {
   for (let i = 0; i < needleList.length; ++i) {
     if (haystack.indexOf(needleList[i]) >= 0) {
       return true;
@@ -7,7 +7,7 @@ export function containsAny(haystack, needleList) {
   return false;
 }
 
-export const colorToRGBA = (function() {
+const colorToRGBA = (function() {
   // Use a canvas to normalize colors for computing.
   // Note: In a test environment, document might be provided by JSDOM.
   let canvas;
@@ -50,7 +50,7 @@ export const colorToRGBA = (function() {
 const grayMargin = 64;
 const alphaFactor = (255 + grayMargin) / 255;
 
-export function colorValenceRaw(r, g, b, a) {
+function colorValenceRaw(r, g, b, a) {
   // Simple YIQ luminance calculation, scaled to (255 * 3) for convenience.
   const lum = ((r*229)+(g*449)+(b*87))/255;
   // Alpha transparency widens the effective gray range from the middle third
@@ -63,11 +63,11 @@ export function colorValenceRaw(r, g, b, a) {
     ;
 }
 
-export function colorValence(color) {
+function colorValence(color) {
   return colorValenceRaw(...colorToRGBA(color));
 }
 
-export function getBgImageType(tag) {
+function getBgImageType(tag) {
   const bgImage = window.getComputedStyle(tag)['background-image'];
   if (containsAny(bgImage, ['data:image/png', '.png', '.PNG'])) {
     return 'png';
@@ -88,7 +88,7 @@ export function getBgImageType(tag) {
   return null;
 }
 
-export function markCssImages(tag) {
+function markCssImages(tag) {
   const imageType = getBgImageType(tag);
   if (imageType) {
     tag.setAttribute('deluminate_imageType', imageType);
@@ -97,7 +97,7 @@ export function markCssImages(tag) {
   }
 }
 
-export function classifyTextColor(rootNode = document) {
+function classifyTextColor(rootNode = document) {
   const paras = new Set(rootNode.querySelectorAll('p:not(footer *)'));
   // Text with line breaks is *probably* basic writing and not fancy labels.
   for (const br of rootNode.querySelectorAll('br:not(footer *)')) {
@@ -149,7 +149,7 @@ export function classifyTextColor(rootNode = document) {
     ;
 }
 
-export function checksPreferredScheme() {
+function checksPreferredScheme() {
   for (const css of document?.styleSheets ?? []) {
     try {
       for (const m of css.media ?? []) {

@@ -11,7 +11,6 @@ const rootAttribute = "hc";
 
 const {
   getBgImageType,
-  markCssImages,
   classifyTextColor,
   checksPreferredScheme
 } = window.deluminateLogic || {};
