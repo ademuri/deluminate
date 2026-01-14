@@ -10,6 +10,7 @@ let rootWatcher;
 const rootAttribute = "hc";
 
 const {
+  getBgImageType,
   markCssImages,
   classifyTextColor,
   checksPreferredScheme
@@ -203,11 +204,23 @@ function detectAnimatedGif(tag) {
 }
 
 let deepImageProcessingComplete = false;
+function processElements(elements) {
+  if (!getBgImageType) return;
+  const types = Array.prototype.map.call(elements, getBgImageType);
+  for (let i = 0; i < elements.length; i++) {
+    const tag = elements[i];
+    const imageType = types[i];
+    if (imageType) {
+      tag.setAttribute('deluminate_imageType', imageType);
+    } else {
+      tag.removeAttribute('deluminate_imageType');
+    }
+  }
+}
+
 function deepImageProcessing() {
   if (deepImageProcessingComplete) return;
-  Array.prototype.forEach.call(
-    document.querySelectorAll('body *:not([style*="url"])'),
-    markCssImages);
+  processElements(document.querySelectorAll('body *:not([style*="url"])'));
   deepImageProcessingComplete = true;
 }
 
@@ -280,15 +293,24 @@ function init() {
 
   newImageHandler = new MutationObserver(function(mutations) {
     if (checkDisconnected()) return;
+    const elementsToProcess = [];
     for(let i=0; i<mutations.length; ++i) {
       for(let j=0; j<mutations[i].addedNodes.length; ++j) {
         const newTag = mutations[i].addedNodes[j];
         if (newTag.querySelectorAll) {
-          Array.prototype.forEach.call(
-            newTag.querySelectorAll('*:not([style*="url"])'),
-            markCssImages);
+          if (newTag.nodeType === Node.ELEMENT_NODE &&
+              !newTag.matches('[style*="url"]')) {
+            elementsToProcess.push(newTag);
+          }
+          const descendants = newTag.querySelectorAll('*:not([style*="url"])');
+          for (let k = 0; k < descendants.length; k++) {
+            elementsToProcess.push(descendants[k]);
+          }
         }
       }
+    }
+    if (elementsToProcess.length > 0) {
+      processElements(elementsToProcess);
     }
   });
 

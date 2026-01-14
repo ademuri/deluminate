@@ -92,6 +92,11 @@ describe("Popup options", () => {
     await init();
   });
 
+  afterEach(() => {
+    delete global.window;
+    delete global.document;
+  });
+
   it("can set the current site settings as the default", async function() {
     // Simulate changing settings via UI to trigger update()
     const allRadio = dom.window.document.querySelector('input[value="all"]');

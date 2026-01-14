@@ -70,6 +70,11 @@ describe("Available options", () => {
     await init();
   });
 
+  afterEach(() => {
+    delete global.window;
+    delete global.document;
+  });
+
   it("can forget all site-specific settings", async function() {
     setSiteScheme("options.deluminate.github.io", 'normal');
     addSiteModifier("options.deluminate.github.io", 'low_contrast');

@@ -17,6 +17,13 @@ export const colorToRGBA = (function() {
   function memoize(f) {
     const memoized = (key) => {
       if (!(key in cache)) {
+        // Simple LRU-ish: if too big, clear half.
+        const keys = Object.keys(cache);
+        if (keys.length > 1000) {
+          for (let i = 0; i < 500; ++i) {
+            delete cache[keys[i]];
+          }
+        }
         cache[key] = f(key);
       }
       return cache[key];
@@ -60,25 +67,29 @@ export function colorValence(color) {
   return colorValenceRaw(...colorToRGBA(color));
 }
 
-export function markCssImages(tag) {
+export function getBgImageType(tag) {
   const bgImage = window.getComputedStyle(tag)['background-image'];
-  let imageType;
   if (containsAny(bgImage, ['data:image/png', '.png', '.PNG'])) {
-    imageType = 'png';
+    return 'png';
   } else if (containsAny(bgImage, ['.gif', '.GIF'])) {
-    imageType = 'gif';
+    return 'gif';
   } else if (containsAny(bgImage,
       ['data:image/jpeg', '.jpg', '.JPG', '.jpeg', '.JPEG'])) {
-    imageType = 'jpg';
+    return 'jpg';
   } else if (containsAny(bgImage,
       ['data:image/svg', '.svg', '.SVG'])) {
-    imageType = 'svg';
+    return 'svg';
   } else if (containsAny(bgImage,
       ['data:image/webp', '.webp'])) {
-    imageType = 'webp';
+    return 'webp';
   } else if (containsAny(bgImage, ['url', 'data:image'])) {
-    imageType = 'unknown';
+    return 'unknown';
   }
+  return null;
+}
+
+export function markCssImages(tag) {
+  const imageType = getBgImageType(tag);
   if (imageType) {
     tag.setAttribute('deluminate_imageType', imageType);
   } else {
@@ -167,6 +178,7 @@ if (typeof window !== 'undefined') {
     colorToRGBA,
     colorValenceRaw,
     colorValence,
+    getBgImageType,
     markCssImages,
     classifyTextColor,
     checksPreferredScheme
