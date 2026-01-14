@@ -1,3 +1,4 @@
+(function() {
 function containsAny(haystack, needleList) {
   for (let i = 0; i < needleList.length; ++i) {
     if (haystack.indexOf(needleList[i]) >= 0) {
@@ -184,3 +185,4 @@ if (typeof window !== 'undefined') {
     checksPreferredScheme
   };
 }
+})();

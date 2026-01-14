@@ -18,8 +18,31 @@ export const test = base.extend({
       ],
     });
 
+    const errors = [];
+    context.on('page', page => {
+      page.on('pageerror', error => {
+        errors.push(`Uncaught exception: ${error.message}`);
+      });
+      page.on('console', msg => {
+        if (msg.type() === 'error') {
+           // Capture syntax errors and specific extension errors
+           const text = msg.text();
+           if (text.includes('SyntaxError') || 
+               text.includes('ReferenceError') || 
+               text.includes('Deluminate')) {
+             errors.push(`Console error: ${text}`);
+           }
+        }
+      });
+    });
+
     await use(context);
+    
     await context.close();
+
+    if (errors.length > 0) {
+       throw new Error(`Test failed with page errors:\n${errors.join('\n')}`);
+    }
   },
   extensionId: async ({ context }, use) => {
     let [background] = context.serviceWorkers();
