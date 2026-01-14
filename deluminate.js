@@ -1,4 +1,7 @@
 (function() {
+if (window.deluminateInjected) return;
+window.deluminateInjected = true;
+
 let scheme_prefix;
 let backdrop;
 let animGifHandler;
