@@ -87,7 +87,7 @@ html[hc^="noinvert-dim5"][hc*="low-contrast"] {
 /* Uninvert select items within the document. */
 
 /* For the -noimg variant, uninvert all images. */
-html[hc*="delumine-noimg"]:not([hc*="dynamic"][looks-dark]) :-webkit-any(
+html[hc*="delumine-noimg"]:not([hc*="dynamic"][looks-dark]) :is(
 img,
 /* Check for "url" in the style attribute, which is usually a fancy way to specify an image */
 [style*="url"]:not([style*="transparent"]),
@@ -100,14 +100,14 @@ video) {
 }
 /* Avoid performing the uninversion process on anything that is a descendant of
  * something uninverted. */
-html[hc*="delumine-noimg"]:not([hc*="dynamic"][looks-dark]) :-webkit-any(
+html[hc*="delumine-noimg"]:not([hc*="dynamic"][looks-dark]) :is(
 img,
 [style*="url"]:not([style*="transparent"]),
 [deluminate_imageType],
 canvas,
 embed,
 object,
-video) :-webkit-any(
+video) :is(
 img,
 [style*="url"]:not([style*="transparent"]),
 [deluminate_imageType],
@@ -118,7 +118,7 @@ video) {
   filter: none;
 }
 /* Reinvert iframes inside tags with background-images specified. */
-html[hc*="delumine-noimg"]:not([hc*="dynamic"][looks-dark]) :-webkit-any(
+html[hc*="delumine-noimg"]:not([hc*="dynamic"][looks-dark]) :is(
 img,
 /* Check for "url" in the style attribute, which is usually a fancy way to specify an image */
 [style*="url"]:not([style*="transparent"]),
@@ -131,7 +131,7 @@ video) iframe {
 }
 
 /* The "smart" filter is more selective about what to uninvert. */
-html[hc*="delumine-smart"]:not([hc*="dynamic"][looks-dark]) body :-webkit-any(
+html[hc*="delumine-smart"]:not([hc*="dynamic"][looks-dark]) body :is(
 	/* Leave PNG and GIF format images inverted, since they usually are
 	 * identifiable even when inverted. */
 	img:not([src$=".png"]):not([src$=".gif"]):not([src$=".PNG"]):not([src$=".GIF"]):not([src$=".svg"]):not([src$=".SVG"]):not([src^="data:image"]):not([src^="blob:"]):not([aria-hidden="true"][alt]:not([alt=""])),
@@ -158,7 +158,7 @@ html[hc*="delumine-smart"]:not([hc*="dynamic"][looks-dark]) body :-webkit-any(
 }
 /* Avoid performing the uninversion process on anything that is a descendant of
  * something uninverted. */
-html[hc*="delumine-smart"]:not([hc*="dynamic"][looks-dark]) body :-webkit-any(
+html[hc*="delumine-smart"]:not([hc*="dynamic"][looks-dark]) body :is(
 	img:not([src$=".png"]):not([src$=".gif"]):not([src$=".PNG"]):not([src$=".GIF"]):not([src^="data:image"]):not([src^="blob:"]):not([aria-hidden="true"][alt]:not([alt=""])),
 	[itemprop="photo"],
 	[itemprop="image"],
@@ -176,7 +176,7 @@ html[hc*="delumine-smart"]:not([hc*="dynamic"][looks-dark]) body :-webkit-any(
 	[style*=".WEBP"],
 	embed:not([type$="pdf"]),
 	object,
-	video) :-webkit-any(
+	video) :is(
 	img:not([src$=".png"]):not([src$=".gif"]):not([src$=".PNG"]):not([src$=".GIF"]):not([src^="data:image"]):not([src^="blob:"]):not([aria-hidden="true"][alt]:not([alt=""])),
 	[itemprop="photo"],
 	[itemprop="image"],
@@ -198,7 +198,7 @@ html[hc*="delumine-smart"]:not([hc*="dynamic"][looks-dark]) body :-webkit-any(
   filter: none;
 }
 /* Reinvert iframes inside tags with background-images specified. */
-html[hc*="delumine-smart"]:not([hc*="dynamic"][looks-dark]) body :-webkit-any(
+html[hc*="delumine-smart"]:not([hc*="dynamic"][looks-dark]) body :is(
 	img:not([src$=".png"]):not([src$=".gif"]):not([src$=".PNG"]):not([src$=".GIF"]):not([src^="data:image"]):not([src^="blob:"]):not([aria-hidden="true"][alt]:not([alt=""])),
 	[itemprop="photo"],
 	[itemprop="image"],
@@ -230,7 +230,7 @@ html[hc*="delumine"][hc*="force_text"] input[type="text"] {
 
 /* ...unless it's uninverted because of a background image. Then set it
  * directly to white text on black. */
-html[hc*="delumine-smart"][hc*="force_text"] input[type="text"]:-webkit-any(
+html[hc*="delumine-smart"][hc*="force_text"] input[type="text"]:is(
 	[src^="data:image/jpeg"],
 	[deluminate_imageType="jpg"],
 	[deluminate_imageType="webp"],
@@ -245,7 +245,7 @@ html[hc*="delumine-smart"][hc*="force_text"] input[type="text"]:-webkit-any(
   color: white !important;
 }
 
-html[hc*="delumine-noimg"][hc*="force_text"] input[style*="url"]:-webkit-any(
+html[hc*="delumine-noimg"][hc*="force_text"] input[style*="url"]:is(
   [type="text"], [dir]):not([style*="transparent"]) {
   background-image: none !important;
   background-color: black !important;

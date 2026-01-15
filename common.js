@@ -29,11 +29,13 @@ async function migrateFromLocalStorage() {
     } catch {
       // Already created. That's fine, just send the message.
     }
-    const [{value: remoteSettings}, {value: {localStorage}}] = await Promise
+    const [remoteResult, migrationResult] = await Promise
       .allSettled([
         api.storage.sync.get(),
         chrome.runtime.sendMessage({target: 'offscreen', action: 'migrate'}),
     ]);
+    const remoteSettings = remoteResult.status === 'fulfilled' ? remoteResult.value : null;
+    const localStorage = migrationResult.status === 'fulfilled' ? migrationResult.value?.localStorage : null;
     if (remoteSettings) {
       try {
         Object.assign(storeCache, remoteSettings);

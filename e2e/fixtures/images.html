@@ -9,16 +9,30 @@
             background-color: white;
             color: black;
         }
-        .bg-image {
+        .test-box {
             width: 100px;
             height: 100px;
-            background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=='); /* Red dot */
+            display: inline-block;
+            border: 1px solid red;
+        }
+        #jpg-bg {
+            background-image: url('image.jpg');
+        }
+        #png-bg {
+            background-image: url('image.png');
         }
     </style>
 </head>
 <body>
     <h1>Image Test Page</h1>
-    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==" alt="Red Dot" id="test-img">
-    <div class="bg-image" id="test-bg"></div>
+    
+    <!-- Images -->
+    <img src="image.jpg" alt="JPG Image" id="jpg-img">
+    <img src="image.png" alt="PNG Image" id="png-img">
+    <img src="image.webp" alt="WebP Image" id="webp-img">
+
+    <!-- Background Images -->
+    <div class="test-box" id="jpg-bg">JPG BG</div>
+    <div class="test-box" id="png-bg">PNG BG</div>
 </body>
 </html>
