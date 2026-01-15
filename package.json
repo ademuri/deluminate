@@ -8,7 +8,7 @@
     "test": "c8 mocha 'spec/**/*.js'",
     "test:e2e": "playwright test",
     "test:all": "npm run test && npm run test:e2e",
-    "package": "zip -r deluminate.zip . -x '*.git*' -x 'node_modules/*' -x 'spec/*' -x '*.zip' -x 'deploy*'",
+    "package": "zip -r deluminate.zip . -x '*.git*' -x 'node_modules/*' -x 'spec/*' -x '*.zip' -x 'deploy*' -x 'pw-browsers*' -x 'coverage*' -x 'test-results*'",
     "deploy": "npm run package && ./deploy deluminate.zip --release",
     "deploy-dev": "npm run package && ./deploy deluminate.zip"
   },
