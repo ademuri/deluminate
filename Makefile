@@ -2,52 +2,35 @@
 
 SHELL := /bin/bash
 
-MANIFEST := \
-	background.js \
-	common.js \
-	deluminate-*.png \
-	deluminate.css \
-	deluminate.js \
-	manifest.json \
-	migrate.html \
-	migrate.js \
-	options.html \
-	options.js \
-	popup.html \
-	popup.js \
-	url_selector.css \
-	url_selector.js \
-	utils.js \
-	*.svg
+# Use git tracked files as dependencies, excluding the 'deploy' script to avoid circular dependency
+SOURCES := $(filter-out deploy, $(shell git ls-files))
 
 BUILD_DIR := build
 
-LAST_VERSION_COMMIT := $(shell git blame manifest.json | grep \\bversion \
-	| cut -d' ' -f1)
-BUILD_NUM := $(shell git log $(LAST_VERSION_COMMIT)..HEAD --oneline \
-	| wc -l | tr -d ' ')
-PKG_SUFFIX := $(shell git symbolic-ref --short HEAD \
-	| sed '/^master$$/d;s/^/-/')
+LAST_VERSION_COMMIT := $(shell git blame manifest.json | grep \bversion | cut -d' ' -f1)
+BUILD_NUM := $(shell git log $(LAST_VERSION_COMMIT)..HEAD --oneline | wc -l | tr -d ' ')
+PKG_SUFFIX := $(shell git symbolic-ref --short HEAD | sed '/^master$$/d;s/^/-/')
 
 package: deluminate$(PKG_SUFFIX).zip
 
-deluminate.zip: $(MANIFEST)
-	zip "$@" $(MANIFEST)
+# Standard package (matches npm run package, but with better exclusions)
+deluminate.zip: $(SOURCES)
+	zip -r "$@" . -x '*.git*' -x 'node_modules/*' -x 'spec/*' -x '*.zip' -x 'deploy*' -x 'coverage*' -x 'pw-browsers*' -x 'test-results*' -x '$(BUILD_DIR)*'
 
-deluminate%.zip: $(MANIFEST) | $(BUILD_DIR)
-	rm -f $(BUILD_DIR)/*
-	cp $(MANIFEST) $(BUILD_DIR)/
-	cp $(BUILD_DIR)/manifest.json $(BUILD_DIR)/manifest.json.orig
-	sed -e '/"version"/s/"[^"]*$$/.$(BUILD_NUM)&/' \
-		-e 's/"Deluminate"/"Deluminate$(PKG_SUFFIX)"/' \
-		"$(BUILD_DIR)/manifest.json.orig" > "$(BUILD_DIR)/manifest.json"
-	cd $(BUILD_DIR) && zip "../$@" $(MANIFEST)
+# Development/Branch package (versioned)
+deluminate%.zip: $(SOURCES) | $(BUILD_DIR)
+	rm -f "$@"
+	zip -r "$@" . -x '*.git*' -x 'node_modules/*' -x 'spec/*' -x '*.zip' -x 'deploy*' -x 'coverage*' -x 'pw-browsers*' -x 'test-results*' -x '$(BUILD_DIR)*'
+	unzip -p "$@" manifest.json > $(BUILD_DIR)/manifest.json.orig
+	sed -e '/"version"/s/"[^"]*$$/.$(BUILD_NUM)&/' -e 's/"Deluminate"/"Deluminate$(PKG_SUFFIX)"/' "$(BUILD_DIR)/manifest.json.orig" > "$(BUILD_DIR)/manifest.json"
+	zip -j "$@" $(BUILD_DIR)/manifest.json
 
 $(BUILD_DIR):
-	mkdir $@
+	mkdir -p $@
 
 clean:
 	rm -f deluminate*.zip
+	rm -rf $(BUILD_DIR)
 	find spec -name 'junit*.xml' -exec rm -f {} +
 
 test: node_modules
@@ -56,8 +39,8 @@ test: node_modules
 node_modules: package.json
 	npm install
 
-deploy: deluminate.zip node_modules
-	npm run deploy -- "$<"
+upload: deluminate.zip node_modules
+	npm run deploy -- "$< "
 
-deploy-dev: deluminate$(PKG_SUFFIX).zip node_modules
-	npm run deploy-dev -- "$<"
+upload-dev: deluminate$(PKG_SUFFIX).zip node_modules
+	npm run deploy-dev -- "$< "
