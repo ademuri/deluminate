@@ -82,6 +82,23 @@ label {
 
 <button id="forget">Forget site customizations</button>
 
+<details style="margin-top: 1em; border: 1px solid #444; padding: 0.5em;">
+  <summary style="cursor: pointer; font-weight: bold;">Migrate from Original Deluminate</summary>
+  <p>To import settings from the original extension:</p>
+  <ol>
+    <li>Open the <strong>Options</strong> page of the <em>original</em> Deluminate.</li>
+    <li>Open <strong>Developer Tools</strong> (F12 or Ctrl+Shift+I).</li>
+    <li>Select the <strong>Console</strong> tab.</li>
+    <li>Run this command:
+      <pre style="background: #222; padding: 5px; user-select: all; overflow-x: auto;">chrome.storage.sync.get(null, d => console.log(JSON.stringify(Object.keys(d).length ? d : localStorage)));</pre>
+    </li>
+    <li>Copy the JSON output and paste it below:</li>
+  </ol>
+  <textarea id="import_data" rows="5" style="width: 100%; box-sizing: border-box; color: #fff; background: #222; border: 1px solid #555;"></textarea>
+  <button id="import_btn">Import Settings</button>
+  <div id="import_status"></div>
+</details>
+
 <hr>
 <a href="https://github.com/abstiles/deluminate/issues/new" id="issues">
   Something wrong? Let me know!

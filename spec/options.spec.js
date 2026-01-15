@@ -10,7 +10,7 @@ import { expect } from 'expect';
 import { JSDOM } from 'jsdom';
 import fs from 'fs';
 
-class FakeStorage {
+export class FakeStorage {
 	constructor() {
 		this.store = {};
 	}

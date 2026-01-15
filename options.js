@@ -5,12 +5,65 @@ import {
   setGlobalSetting,
   delSiteSettings,
   resetSiteSchemes,
+  migrateV1toV2,
+  storeSet,
+  setEnabled,
 } from './common.js';
 
 function initSettings() {
   const globalSettings = getGlobalSettings();
   if (globalSettings['detect_animation']) {
     $('detect_animation').value = globalSettings['detect_animation'];
+  }
+}
+
+export async function onImport() {
+  const status = $('import_status');
+  status.textContent = "Importing...";
+  status.style.color = "#8BF";
+  try {
+    const jsonStr = $('import_data').value;
+    if (!jsonStr.trim()) {
+      status.textContent = "Error: No data provided.";
+      status.style.color = "#d54848";
+      return;
+    }
+    const data = JSON.parse(jsonStr);
+
+    let v2Data;
+    if (data.sites && Array.isArray(data.sites)) {
+       v2Data = data;
+    } else if (data.sitemodifiers || data.siteschemes || data.enabled !== undefined || data.localStorage) {
+       v2Data = migrateV1toV2(data.localStorage || data);
+    } else {
+       v2Data = migrateV1toV2(data);
+    }
+
+    if (v2Data.enabled !== undefined) {
+      await setEnabled(v2Data.enabled);
+    }
+    if (v2Data.sites) {
+      await storeSet('sites', v2Data.sites);
+    }
+    if (v2Data.settings) {
+       await storeSet('settings', v2Data.settings);
+    }
+
+    await syncStore();
+
+    status.textContent = "Import successful! Refreshing...";
+    status.style.color = "#0f0";
+    setTimeout(async () => {
+        status.textContent = "";
+        const store = await syncStore();
+        initSettings();
+        loadSettingsDisplay(store.export());
+    }, 1000);
+
+  } catch (e) {
+    status.textContent = "Error: " + e.message;
+    status.style.color = "#d54848";
+    console.error(e);
   }
 }
 
@@ -73,6 +126,7 @@ function loadSettingsDisplay(store) {
     return row;
   }
   const settingsDiv = $('settings');
+  settingsDiv.innerHTML = "";
   const heading = makeTag("div",
     makeTag("span", ""),
     makeTag("span", "Website"),
@@ -90,6 +144,7 @@ export async function init() {
   const store = await syncStore();
   initSettings();
   $('forget').addEventListener('click', onForget, false);
+  $('import_btn').addEventListener('click', onImport, false);
   $('detect_animation').addEventListener('change', onDetectAnim, false);
   loadSettingsDisplay(store.export());
 }

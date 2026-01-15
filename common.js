@@ -80,15 +80,16 @@ function parseSiteMods(sitemods) {
 
 const toBool = (str) => str !== "false" && Boolean(str);
 
-function migrateV1toV2(v1) {
+export function migrateV1toV2(v1) {
   const v2 = {version: 2, enabled: toBool(v1?.enabled ?? true)};
   const defaultFilter = (v1?.scheme ?? DEFAULT_SCHEME)
     .split("-").slice(1).join("-") || "normal"
     ;
-  const schemeToFilter = (scheme) =>
-    (scheme ?? `filter-${defaultFilter}`)
-    .split("-").slice(1).join("-") || "normal"
-    ;
+  const schemeToFilter = (scheme) => {
+    const filter = (scheme ?? `filter-${defaultFilter}`)
+      .split("-").slice(1).join("-") || "normal";
+    return filter === "no-invert" ? "normal" : filter;
+  };
   const defaultMods = [];
   if (toBool(v1?.low_contrast)) {
     defaultMods.push("low_contrast");
@@ -113,6 +114,7 @@ function migrateV1toV2(v1) {
       schemeToFilter(siteSchemes[domain]),
       parseSiteMods(siteModifiers[domain]).map(mod => ({
         "low-contrast": "low_contrast",
+        "low_contrast": "low_contrast",
         "kill_background": "killbg",
         "force_text": "forceinput",
       })[mod]).filter(Boolean),
