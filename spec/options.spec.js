@@ -14,8 +14,8 @@ export class FakeStorage {
 	constructor() {
 		this.store = {};
 	}
-	async set(key, value) {
-		this.store[key] = value;
+	async set(items) {
+		Object.assign(this.store, items);
 	}
 	async get(keys) {
 		if (typeof keys === "undefined") {
@@ -89,4 +89,42 @@ describe("Available options", () => {
 
     expect(changedFromDefault("options.deluminate.github.io")).toBe(false);
   });
+
+  it("renders saved site settings in the list", async function() {
+    await setSiteScheme("example.com", "dim1");
+    await init(); // re-init to load settings
+
+    const settingsDiv = dom.window.document.getElementById('settings');
+    // We expect a row for the heading + a row for example.com
+    // The implementation creates divs directly in #settings, not a table.
+    // Heading: #settings-heading.
+    // Row: div with 4 spans/buttons.
+    
+    // Check if "example.com" text is present
+    expect(settingsDiv.textContent).toContain("example.com");
+    expect(settingsDiv.textContent).toContain("dim1");
+  });
+
+  it("deletes a site setting via the UI delete button", async function() {
+    await setSiteScheme("todelete.com", "smart");
+    await init();
+
+    const settingsDiv = dom.window.document.getElementById('settings');
+    const deleteButtons = settingsDiv.getElementsByClassName('delete-button');
+    expect(deleteButtons.length).toBeGreaterThan(0);
+
+    // Click the first delete button (should correspond to our site as it's the only one added)
+    deleteButtons[0].click();
+
+    // Wait for async operations (storage update)
+    await new Promise(resolve => setTimeout(resolve, 10));
+
+    // Verify it's gone from storage
+    expect(changedFromDefault("todelete.com")).toBe(false);
+    
+    // Verify it's removed from DOM
+    expect(settingsDiv.textContent).not.toContain("todelete.com");
+  });
 });
+
+  

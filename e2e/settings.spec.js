@@ -26,4 +26,31 @@ test.describe('Settings Interaction', () => {
     await popupPage.locator('input[value="smart"]').click();
     await expect(html).toHaveAttribute('hc', /delumine-smart/);
   });
+
+  test('applies Dim mode', async ({ page, context, server, extensionId }) => {
+    await page.goto(`${server}/basic.html`);
+    const html = page.locator('html');
+
+    const popupPage = await context.newPage();
+    await popupPage.goto(`chrome-extension://${extensionId}/popup.html`);
+
+    // Click Dim radio button. Note: value="dim1" is the default for dim radio
+    await popupPage.locator('input[value="dim1"]').click();
+    
+    await expect(html).toHaveAttribute('hc', /delumine-dim/);
+  });
+
+  test('applies Kill Backgrounds modifier', async ({ page, context, server, extensionId }) => {
+    await page.goto(`${server}/basic.html`);
+    const html = page.locator('html');
+
+    const popupPage = await context.newPage();
+    await popupPage.goto(`chrome-extension://${extensionId}/popup.html`);
+
+    // Toggle Kill Backgrounds
+    await popupPage.locator('input#killbg').click();
+
+    // The 'hc' attribute is a space-separated list of classes/modifiers
+    await expect(html).toHaveAttribute('hc', /killbg/);
+  });
 });
