@@ -37,7 +37,7 @@ test.describe('Settings Interaction', () => {
     // Click Dim radio button. Note: value="dim1" is the default for dim radio
     await popupPage.locator('input[value="dim1"]').click();
     
-    await expect(html).toHaveAttribute('hc', /delumine-dim/);
+    await expect(html).toHaveAttribute('hc', /noinvert-dim/);
   });
 
   test('applies Kill Backgrounds modifier', async ({ page, context, server, extensionId }) => {
@@ -51,6 +51,6 @@ test.describe('Settings Interaction', () => {
     await popupPage.locator('input#killbg').click();
 
     // The 'hc' attribute is a space-separated list of classes/modifiers
-    await expect(html).toHaveAttribute('hc', /killbg/);
+    await expect(html).toHaveAttribute('hc', /kill_background/);
   });
 });

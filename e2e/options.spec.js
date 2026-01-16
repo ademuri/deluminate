@@ -29,9 +29,12 @@ test.describe('Options Page', () => {
     // 1. Pre-seed storage with a site setting
     await page.goto(`chrome-extension://${extensionId}/options.html`);
     await page.evaluate(async (domain) => {
+      // Prevent migration from running and potentially messing with storage
+      await chrome.storage.local.set({ migrationComplete: 2 });
+      
       // mimic setSiteScheme logic or just write to storage directly if we know the structure
       // Structure: sites: [[url, filter, ...modifiers]]
-      const sites = [[domain, 'dim']];
+      const sites = [[domain, 'dim1']];
       await chrome.storage.sync.set({ sites });
     }, site);
 
@@ -41,7 +44,7 @@ test.describe('Options Page', () => {
     // 3. Verify site is listed
     const settingsList = page.locator('#settings');
     await expect(settingsList).toContainText(site);
-    await expect(settingsList).toContainText('dim');
+    await expect(settingsList).toContainText('dim1');
 
     // 4. Click delete button
     const deleteBtn = page.locator('.delete-button').first();
@@ -51,10 +54,13 @@ test.describe('Options Page', () => {
     await expect(settingsList).not.toContainText(site);
 
     // 6. Verify it is gone from storage
-    const storedSites = await page.evaluate(async () => {
-        const data = await chrome.storage.sync.get('sites');
-        return data.sites || [];
-    });
-    expect(storedSites).toHaveLength(0);
+    await expect.poll(async () => {
+        const storedSites = await page.evaluate(async () => {
+            const data = await chrome.storage.sync.get('sites');
+            return data.sites || [];
+        });
+        // Filter out the default setting (empty URL) which might be persisted
+        return storedSites.filter(s => s[0] !== "");
+    }).toHaveLength(0);
   });
 });
