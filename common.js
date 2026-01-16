@@ -176,12 +176,16 @@ export function setSiteSettings(site, siteSettings) {
   return storeSet("sites", storeCache.sites);
 }
 
-export async function delSiteSettings(site) {
-
-  const {sites} = await api.storage.sync.get("sites");
-
-  return await storeSet("sites", (sites || []).filter(siteRow => siteRow[0] !== site));
-
+export function delSiteSettings(site) {
+  settings.remove(site);
+  storeCache.sites = settings.export();
+  try {
+    api.storage.local.set({sites: settings.exportLocal()});
+  }
+  catch(error) {
+    console.warn(error)
+  }
+  return storeSet("sites", storeCache.sites);
 }
 
 export async function resetSiteSchemes() {
