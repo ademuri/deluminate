@@ -177,9 +177,11 @@ export function setSiteSettings(site, siteSettings) {
 }
 
 export async function delSiteSettings(site) {
+
   const {sites} = await api.storage.sync.get("sites");
 
-  return await storeSet("sites", sites.filter(siteRow => siteRow[0] !== site));
+  return await storeSet("sites", (sites || []).filter(siteRow => siteRow[0] !== site));
+
 }
 
 export async function resetSiteSchemes() {

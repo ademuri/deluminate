@@ -118,9 +118,13 @@ function loadSettingsDisplay(store) {
     );
     if (url) {
       deleteBtn.className = "delete-button";
-      deleteBtn.onclick = () => {
+      deleteBtn.onclick = async () => {
         row.parentElement.removeChild(row);
-        delSiteSettings(url);
+        try {
+          await delSiteSettings(url);
+        } catch (e) {
+          console.error(`Failed to delete settings for ${url}:`, e);
+        }
       }
     }
     return row;

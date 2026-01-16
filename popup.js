@@ -141,34 +141,46 @@ export async function init() {
 
   await syncStore();
 
-  const window = await chrome.windows.getLastFocused({'populate': true});
-  for (const tab of window.tabs) {
-    if (!tab.active) continue;
-    if (isDisallowedUrl(tab.url)) {
-      $('scheme_title').innerText = 'Default color scheme:';
-      $('make_default').style.display = 'none';
-      selector = nullSelector;
-    } else if (isFileUrl(tab.url)) {
-      const isAllowed = await chrome.extension.isAllowedFileSchemeAccess();
-      if (isAllowed) {
-        $('scheme_title').innerText = 'File color scheme:';
+  const params = new URLSearchParams(window.location.search);
+  const testUrl = params.get('tabUrl');
+  if (testUrl) {
+    $('scheme_title').innerHTML = 'Color scheme for ' +
+        '<div id="selector"></div>' +
+        '<div class="kb">(Toggle: ' + key2 + ')</div>';
+    selector = new UrlSelector(testUrl);
+    selector.render_to($('selector'));
+    selector.select_site(getMatchingSite(testUrl));
+    $('make_default').style.display = 'block';
+  } else {
+    const window = await chrome.windows.getLastFocused({'populate': true});
+    for (const tab of window.tabs) {
+      if (!tab.active) continue;
+      if (isDisallowedUrl(tab.url)) {
+        $('scheme_title').innerText = 'Default color scheme:';
+        $('make_default').style.display = 'none';
+        selector = nullSelector;
+      } else if (isFileUrl(tab.url)) {
+        const isAllowed = await chrome.extension.isAllowedFileSchemeAccess();
+        if (isAllowed) {
+          $('scheme_title').innerText = 'File color scheme:';
+        } else {
+          $('scheme_title').innerText = '';
+          $('extension-settings').href = `chrome://extensions/?id=${chrome.runtime.id}`;
+          $('local-files-error').removeAttribute('hidden');
+          $('settings-form').setAttribute('inert', '');
+        }
+        selector = {get_site: () => tab.url};
       } else {
-        $('scheme_title').innerText = '';
-        $('extension-settings').href = `chrome://extensions/?id=${chrome.runtime.id}`;
-        $('local-files-error').removeAttribute('hidden');
-        $('settings-form').setAttribute('inert', '');
+        $('scheme_title').innerHTML = 'Color scheme for ' +
+            '<div id="selector"></div>' +
+            '<div class="kb">(Toggle: ' + key2 + ')</div>';
+        selector = new UrlSelector(tab.url);
+        selector.render_to($('selector'));
+        selector.select_site(getMatchingSite(tab.url));
+        $('make_default').style.display = 'block';
       }
-      selector = {get_site: () => tab.url};
-    } else {
-      $('scheme_title').innerHTML = 'Color scheme for ' +
-          '<div id="selector"></div>' +
-          '<div class="kb">(Toggle: ' + key2 + ')</div>';
-      selector = new UrlSelector(tab.url);
-      selector.render_to($('selector'));
-      selector.select_site(getMatchingSite(tab.url));
-      $('make_default').style.display = 'block';
+      break;
     }
-    break;
   }
   const currentSettings = getSiteSettings(selector.get_site());
   const currentScheme = currentSettings.filter;

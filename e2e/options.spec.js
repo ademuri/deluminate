@@ -29,16 +29,27 @@ test.describe('Options Page', () => {
     // 1. Pre-seed storage with a site setting
     await page.goto(`chrome-extension://${extensionId}/options.html`);
     await page.evaluate(async (domain) => {
-      // Prevent migration from running and potentially messing with storage
-      await chrome.storage.local.set({ migrationComplete: 2 });
+      // Wait for background migration to finish to prevent overwrites
+      await new Promise(resolve => {
+        const check = () => {
+          chrome.storage.local.get(['migrationComplete'], (res) => {
+            if (res.migrationComplete === 2) resolve();
+            else setTimeout(check, 100);
+          });
+        };
+        check();
+      });
       
       // mimic setSiteScheme logic or just write to storage directly if we know the structure
       // Structure: sites: [[url, filter, ...modifiers]]
       const sites = [[domain, 'dim1']];
       await chrome.storage.sync.set({ sites });
+      const check = await chrome.storage.sync.get('sites');
+      if (!check.sites || check.sites.length === 0) throw new Error('Failed to set storage');
     }, site);
 
     // 2. Reload to see the changes
+    await page.waitForTimeout(500);
     await page.reload();
 
     // 3. Verify site is listed

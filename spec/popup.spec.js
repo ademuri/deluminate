@@ -150,4 +150,24 @@ describe("Popup options", () => {
     const makeDefaultBtn = dom.window.document.getElementById('make_default');
     expect(makeDefaultBtn.disabled).toBe(false);
   });
+
+  it("initializes with tabUrl query parameter", async function() {
+      // Re-initialize JSDOM with a query parameter
+      const popupHtml = fs.readFileSync(new URL("../popup.html", import.meta.url));
+      dom = new JSDOM(popupHtml, {
+          url: "chrome-extension://id/popup.html?tabUrl=https%3A%2F%2Fexample.com%2Fpage"
+      });
+      global.document = dom.window.document;
+      global.window = dom.window;
+
+      await init();
+
+      // Check if title reflects the override URL
+      const selector = dom.window.document.getElementById('selector');
+      expect(selector.textContent).toContain('example.com');
+      
+      // Check if domain is set correctly in UrlSelector UI
+      const hostSpan = selector.querySelector('.host');
+      expect(hostSpan.textContent).toBe('example.com');
+  });
 });
