@@ -195,9 +195,8 @@ function init() {
         (async () => {
           console.log("Fetching settings.");
           await syncStore();
-          console.log("Injecting content scripts.");
-          await injectContentScripts();
-          console.log("Deluminate is ready.");
+          console.log("Deluminate is ready (starting injection).");
+          injectContentScripts().then(() => console.log("Initial injection complete.")).catch(e => console.error("Initial injection failed:", e));
         })(),
         new Promise((_, reject) => setTimeout(() => reject(new Error("Initialization timed out")), 10000))
       ]);
