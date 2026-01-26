@@ -72,6 +72,25 @@ export async function onForget() {
   loadSettingsDisplay((await syncStore()).export());
 }
 
+export async function onDeleteSelected() {
+  const checkboxes = document.querySelectorAll('.site-select:checked');
+  const urls = Array.from(checkboxes).map(cb => cb.dataset.url);
+  
+  let deletedCount = 0;
+  for (const url of urls) {
+      if (!url) continue; // Skip default setting
+      try {
+        await delSiteSettings(url);
+        deletedCount++;
+      } catch (e) {
+        console.error(`Failed to delete settings for ${url}:`, e);
+      }
+  }
+  if (deletedCount > 0) {
+      loadSettingsDisplay((await syncStore()).export());
+  }
+}
+
 // Open all links in new tabs.
 function onLinkClick() {
   const links = document.getElementsByTagName("a");
@@ -107,10 +126,16 @@ function loadSettingsDisplay(store) {
     return element;
   }
   function makeSiteDiv([url, filter, ...mods]) {
+    const checkbox = makeTag("input");
+    checkbox.type = "checkbox";
+    checkbox.className = "site-select";
+    checkbox.dataset.url = url || "";
+    
     const deleteIcon = makeTag("img");
     deleteIcon.src = chrome.runtime.getURL("delete.svg");
     const deleteBtn = url ? makeTag("button", deleteIcon) : makeTag("span", "");
     const row = makeTag('div',
+      checkbox,
       deleteBtn,
       makeTag('span', url || "DEFAULT"),
       makeTag('span', filter),
@@ -119,19 +144,33 @@ function loadSettingsDisplay(store) {
     if (url) {
       deleteBtn.className = "delete-button";
       deleteBtn.onclick = async () => {
-        row.parentElement.removeChild(row);
         try {
           await delSiteSettings(url);
+          loadSettingsDisplay((await syncStore()).export());
         } catch (e) {
           console.error(`Failed to delete settings for ${url}:`, e);
+          alert("Error deleting site: " + e.message);
         }
       }
+    } else {
+        checkbox.disabled = true; // Disable checking default
     }
     return row;
   }
   const settingsDiv = $('settings');
   settingsDiv.innerHTML = "";
+  
+  // Select All Checkbox
+  const selectAll = makeTag("input");
+  selectAll.type = "checkbox";
+  selectAll.onclick = (e) => {
+      document.querySelectorAll('.site-select').forEach(cb => {
+          if (!cb.disabled) cb.checked = e.target.checked;
+      });
+  };
+
   const heading = makeTag("div",
+    selectAll,
     makeTag("span", ""),
     makeTag("span", "Website"),
     makeTag("span", "Filter"),
@@ -148,6 +187,7 @@ export async function init() {
   const store = await syncStore();
   initSettings();
   $('forget').addEventListener('click', onForget, false);
+  $('delete_selected').addEventListener('click', onDeleteSelected, false);
   $('import_btn').addEventListener('click', onImport, false);
   $('detect_animation').addEventListener('change', onDetectAnim, false);
   loadSettingsDisplay(store.export());

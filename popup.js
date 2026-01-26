@@ -58,39 +58,58 @@ function changedFromDefault() {
   return !getSiteSettings().equals(getSiteSettings(selector.get_site()));
 }
 
+async function wrapAction(action) {
+  try {
+    await action();
+  } catch (err) {
+    alert("Storage error: " + err.message + "\n\nYou may need to clean up unused site settings in the Options page.");
+    console.error(err);
+  }
+}
+
 async function onToggle() {
-  await setEnabled(!getEnabled());
-  update();
+  await wrapAction(async () => {
+    await setEnabled(!getEnabled());
+    update();
+  });
 }
 
 async function onRadioChange(name, value) {
-  switch (name) {
-    case 'scheme':
-      await setSiteScheme(selector.get_site(), value);
-      break;
-  }
-  update();
+  await wrapAction(async () => {
+    switch (name) {
+      case 'scheme':
+        await setSiteScheme(selector.get_site(), value);
+        break;
+    }
+    update();
+  });
 }
 
 async function onOptionToggle(evt) {
-  if (evt.target.checked) {
-    await addSiteModifier(selector.get_site(), evt.target.id);
-  } else {
-    await delSiteModifier(selector.get_site(), evt.target.id);
-  }
-  update();
+  await wrapAction(async () => {
+    if (evt.target.checked) {
+      await addSiteModifier(selector.get_site(), evt.target.id);
+    } else {
+      await delSiteModifier(selector.get_site(), evt.target.id);
+    }
+    update();
+  });
 }
 
 async function onDimLevel(evt) {
-  const dimLevel = "dim" + evt.target.value;
-  $('dim_radio').value = dimLevel;
-  await setSiteScheme(selector.get_site(), dimLevel);
-  update();
+  await wrapAction(async () => {
+    const dimLevel = "dim" + evt.target.value;
+    $('dim_radio').value = dimLevel;
+    await setSiteScheme(selector.get_site(), dimLevel);
+    update();
+  });
 }
 
 async function onMakeDefault() {
-  await setSiteSettings(null, getSiteSettings(selector.get_site()));
-  update();
+  await wrapAction(async () => {
+    await setSiteSettings(null, getSiteSettings(selector.get_site()));
+    update();
+  });
 }
 
 function addRadioListeners(name) {

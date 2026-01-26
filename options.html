@@ -42,7 +42,7 @@ button.delete-button {
   max-height: calc(100vh - 20em);
   display: grid;
   column-gap: 1em;
-  grid-template-columns: 1em repeat(3, 1fr);
+  grid-template-columns: 1em 1em repeat(3, 1fr);
   overflow: scroll;
   -webkit-box-sizing: border-box;
 }
@@ -80,6 +80,7 @@ label {
 <h3>Saved Site Customizations</h3>
 <div id="settings"></div>
 
+<button id="delete_selected">Delete Selected</button>
 <button id="forget">Forget site customizations</button>
 
 <details style="margin-top: 1em; border: 1px solid #444; padding: 0.5em;">

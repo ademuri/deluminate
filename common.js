@@ -131,16 +131,67 @@ export async function syncStore() {
   return await refreshStore();
 }
 
+function splitSites(sites) {
+  if (!sites || sites.length === 0) return [[]];
+  const chunks = [];
+  const chunkSize = 100;
+  for (let i = 0; i < sites.length; i += chunkSize) {
+    chunks.push(sites.slice(i, i + chunkSize));
+  }
+  return chunks;
+}
+
+function mergeSites(storeItems) {
+  let allSites = storeItems.sites || [];
+  let i = 1;
+  while (storeItems[`sites_${i}`]) {
+    allSites = allSites.concat(storeItems[`sites_${i}`]);
+    i++;
+  }
+  return allSites;
+}
+
 export async function refreshStore() {
   const items = await api.storage.sync.get();
   Object.assign(storeCache, items);
+  storeCache.sites = mergeSites(items);
   settings = Settings.import(storeCache?.sites, DEFAULT_FILTER);
   settings.import((await api.storage.local.get("sites"))["sites"] ?? []);
   return settings;
 }
 
-export function storeSet(key, value) {
+export async function storeSet(key, value) {
   storeCache[key] = value;
+  
+  if (key === "sites") {
+    const chunks = splitSites(value);
+    const updates = {};
+    updates.sites = chunks[0] || [];
+    for (let i = 1; i < chunks.length; i++) {
+      updates[`sites_${i}`] = chunks[i];
+      storeCache[`sites_${i}`] = chunks[i];
+    }
+    
+    // Cleanup old keys
+    try {
+      const allKeys = Object.keys(await api.storage.sync.get());
+      const keysToRemove = allKeys.filter(k => {
+          if (!k.startsWith("sites_")) return false;
+          const index = parseInt(k.split("_")[1]);
+          return !isNaN(index) && index >= chunks.length;
+      });
+      
+      if (keysToRemove.length > 0) {
+          keysToRemove.forEach(k => delete storeCache[k]);
+          await api.storage.sync.remove(keysToRemove);
+      }
+    } catch (e) {
+      console.warn("Failed to cleanup old site keys", e);
+    }
+    
+    return api.storage.sync.set(updates);
+  }
+
   return api.storage.sync.set({[key]: value});
 }
 
