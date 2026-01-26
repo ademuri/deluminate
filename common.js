@@ -21,17 +21,23 @@ async function migrateFromLocalStorage() {
   }
   migrationTask = (async () => {
     try {
-      await chrome.offscreen.createDocument({
-        url: 'migrate.html',
-        reasons: ['LOCAL_STORAGE'],
-        justification: 'migrating local storage to cloud sync storage',
-      });
+      await Promise.race([
+        chrome.offscreen.createDocument({
+          url: 'migrate.html',
+          reasons: ['LOCAL_STORAGE'],
+          justification: 'migrating local storage to cloud sync storage',
+        }),
+        new Promise((_, reject) => setTimeout(() => reject(new Error("Offscreen creation timed out")), 4000))
+      ]);
     } catch {
-      // Already created. That's fine, just send the message.
+      // Already created or timed out. That's fine, just send the message.
     }
     const [remoteResult, migrationResult] = await Promise
       .allSettled([
-        api.storage.sync.get(),
+        Promise.race([
+          api.storage.sync.get(),
+          new Promise((_, reject) => setTimeout(() => reject(new Error("Sync get timed out")), 2000))
+        ]),
         Promise.race([
           chrome.runtime.sendMessage({target: 'offscreen', action: 'migrate'}),
           new Promise((_, reject) => setTimeout(() => reject(new Error("Migration message timed out")), 1000))

@@ -199,7 +199,7 @@ function init() {
           await injectContentScripts();
           console.log("Deluminate is ready.");
         })(),
-        new Promise((_, reject) => setTimeout(() => reject(new Error("Initialization timed out")), 2000))
+        new Promise((_, reject) => setTimeout(() => reject(new Error("Initialization timed out")), 10000))
       ]);
     } catch (error) {
       console.error("Error during initial setup:", error);
