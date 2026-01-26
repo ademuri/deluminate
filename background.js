@@ -205,7 +205,7 @@ function init() {
   chrome.runtime.onMessage.addListener(messageDispatcher);
 
   chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
-    if (changeInfo.url || changeInfo.status === "loading") {
+    if (changeInfo.url || changeInfo.status === "loading" || changeInfo.status === "complete") {
       // Ping the tab to see if content script is alive
       chrome.tabs.sendMessage(tabId, {pingTab: true}, {}, () => {
         if (chrome.runtime.lastError) {
