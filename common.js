@@ -161,11 +161,30 @@ function mergeSites(storeItems) {
 }
 
 export async function refreshStore() {
-  const items = await api.storage.sync.get();
+  let items = {};
+  try {
+    items = await Promise.race([
+      api.storage.sync.get(),
+      new Promise((_, reject) => setTimeout(() => reject(new Error("Sync get timed out")), 2000))
+    ]);
+  } catch (e) {
+    console.warn("Failed to refresh store from sync (using defaults):", e);
+  }
+  
   Object.assign(storeCache, items);
   storeCache.sites = mergeSites(items);
   settings = Settings.import(storeCache?.sites, DEFAULT_FILTER);
-  settings.import((await api.storage.local.get("sites"))["sites"] ?? []);
+  
+  try {
+    const localSites = await Promise.race([
+        api.storage.local.get("sites"),
+        new Promise((_, reject) => setTimeout(() => reject(new Error("Local get timed out")), 1000))
+    ]);
+    settings.import(localSites["sites"] ?? []);
+  } catch (e) {
+     console.warn("Failed to load local sites:", e);
+  }
+  
   return settings;
 }
 
