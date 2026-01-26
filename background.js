@@ -190,11 +190,17 @@ function init() {
 
   initializationCompletePromise = (async () => {
     try {
-      console.log("Fetching settings.");
-      await syncStore();
-      console.log("Injecting content scripts.");
-      await injectContentScripts();
-      console.log("Deluminate is ready.");
+      // Race initialization against a timeout to prevent hanging
+      await Promise.race([
+        (async () => {
+          console.log("Fetching settings.");
+          await syncStore();
+          console.log("Injecting content scripts.");
+          await injectContentScripts();
+          console.log("Deluminate is ready.");
+        })(),
+        new Promise((_, reject) => setTimeout(() => reject(new Error("Initialization timed out")), 2000))
+      ]);
     } catch (error) {
       console.error("Error during initial setup:", error);
       // We do not re-throw here to allow the extension to function (perhaps with defaults)

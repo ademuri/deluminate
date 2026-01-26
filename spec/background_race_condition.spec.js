@@ -1,6 +1,42 @@
 
 import { describe, it, beforeEach, afterEach } from 'mocha';
 import assert from 'node:assert';
+import { resetSiteSchemes, api } from '../common.js';
+
+class FakeStorage {
+	constructor() {
+		this.store = {};
+	}
+	async set(items) {
+		Object.assign(this.store, items);
+	}
+	async get(keys) {
+		if (typeof keys === "undefined") {
+			return this.store;
+		} else if (typeof keys === "string") {
+			keys = [keys];
+		}
+		const result = {};
+		for (const key of keys) {
+			result[key] = this.store[key];
+		}
+		return result;
+	}
+	async remove(keys) {
+		if (typeof keys === "undefined") {
+			return;
+		}
+		if (typeof keys === "string") {
+			keys = [keys];
+		}
+		for (const key of keys) {
+			delete this.store[key];
+		}
+	}
+	clear() {
+		this.store = {};
+	}
+}
 
 describe('Background Script Injection Logic', () => {
   let listeners = {};
@@ -51,11 +87,7 @@ describe('Background Script Injection Logic', () => {
         sendMessage: (msg) => Promise.resolve()
       },
       storage: {
-        sync: { 
-          get: () => Promise.resolve({}), 
-          set: () => Promise.resolve(),
-          remove: () => Promise.resolve()
-        },
+        sync: new FakeStorage(),
         local: { 
           get: () => Promise.resolve({migrationComplete: 2}), 
           set: () => Promise.resolve() 
@@ -91,6 +123,14 @@ describe('Background Script Injection Logic', () => {
     };
     
     global.chrome = chromeMock;
+    
+    // Patch api.storage if api exists (was imported)
+    // If common.js loaded before, api is {}, we patch it.
+    // If common.js loads now, it uses global.chrome, so it uses chromeMock.storage (FakeStorage).
+    if (api) {
+        api.storage = chromeMock.storage;
+    }
+
     global.window = {}; // needed for common.js possibly? No, it checks typeof chrome
     
     // global.navigator might be read-only
@@ -115,7 +155,14 @@ describe('Background Script Injection Logic', () => {
     await import(backgroundPath);
   });
 
-  afterEach(() => {
+  afterEach(async () => {
+    // Clean up common.js state
+    try {
+        await resetSiteSchemes();
+    } catch (e) {
+        console.error("Failed to reset site schemes:", e);
+    }
+
     // Restore originals
     if (originalChrome) global.chrome = originalChrome; else delete global.chrome;
     if (originalWindow) global.window = originalWindow; else delete global.window;

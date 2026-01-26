@@ -32,7 +32,10 @@ async function migrateFromLocalStorage() {
     const [remoteResult, migrationResult] = await Promise
       .allSettled([
         api.storage.sync.get(),
-        chrome.runtime.sendMessage({target: 'offscreen', action: 'migrate'}),
+        Promise.race([
+          chrome.runtime.sendMessage({target: 'offscreen', action: 'migrate'}),
+          new Promise((_, reject) => setTimeout(() => reject(new Error("Migration message timed out")), 1000))
+        ]),
     ]);
     const remoteSettings = remoteResult.status === 'fulfilled' ? remoteResult.value : null;
     const localStorage = migrationResult.status === 'fulfilled' ? migrationResult.value?.localStorage : null;
