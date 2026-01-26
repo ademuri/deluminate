@@ -192,4 +192,34 @@ describe('Background Script Injection Logic', () => {
 
     assert.strictEqual(executeScriptCalls.length, 1, 'Should have called executeScript');
   });
+
+  it('should attempt injection when ping response is missing (ghost script)', async () => {
+    const onUpdated = listeners['onUpdated'];
+    assert.ok(onUpdated, 'onUpdated listener should be registered');
+
+    const tabId = 789;
+    const changeInfo = { status: 'complete' };
+    const tab = { id: tabId, url: 'https://example.com' };
+
+    // lastError is null (simulating successful message delivery but no response)
+    chrome.runtime.lastError = null;
+
+    let pingCalled = false;
+    chrome.tabs.sendMessage = (tid, msg, opts, cb) => {
+       if (tid === tabId && msg.pingTab) {
+         pingCalled = true;
+         // Callback with no response (undefined)
+         cb();
+       }
+    };
+
+    onUpdated(tabId, changeInfo, tab);
+
+    assert.strictEqual(pingCalled, true, 'Should have pinged the tab');
+    
+    // Wait for async injection logic
+    await new Promise(resolve => setTimeout(resolve, 10));
+
+    assert.strictEqual(executeScriptCalls.length, 1, 'Should have called executeScript because response was missing');
+  });
 });

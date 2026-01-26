@@ -197,8 +197,8 @@ function init() {
       console.log("Deluminate is ready.");
     } catch (error) {
       console.error("Error during initial setup:", error);
-      // This error will propagate to awaiters of initializationCompletePromise
-      throw error; 
+      // We do not re-throw here to allow the extension to function (perhaps with defaults)
+      // even if initial sync/injection failed.
     }
   })();
 
@@ -207,8 +207,8 @@ function init() {
   chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
     if (changeInfo.url || changeInfo.status === "loading" || changeInfo.status === "complete") {
       // Ping the tab to see if content script is alive
-      chrome.tabs.sendMessage(tabId, {pingTab: true}, {}, () => {
-        if (chrome.runtime.lastError) {
+      chrome.tabs.sendMessage(tabId, {pingTab: true}, {}, (response) => {
+        if (chrome.runtime.lastError || !response) {
           // No listener, or other error means content script might not be there.
           console.log(`Tab updated, reinjecting ${tab.url}: ${JSON.stringify(changeInfo)}`);
           // Ensure initialization is complete before injecting,

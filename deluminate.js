@@ -20,7 +20,10 @@ function onExtensionMessage(request, sender, sendResponse) {
     console.log(`Failed to communicate init request`);
   }
   if (request.target === 'offscreen') return;
-  if (request.pingTab) return;
+  if (request.pingTab) {
+    if (sendResponse) sendResponse(true);
+    return;
+  }
   if (request['manual_css']) {
     addCSSLink();
     return;
