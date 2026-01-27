@@ -1,7 +1,7 @@
 {
   "type": "module",
   "name": "deluminate",
-  "version": "1.0.2",
+  "version": "1.1.1",
   "description": "Invert the luminance of a website to make it easier on the eyes.",
   "scripts": {
     "lint": "eslint *.js",
@@ -36,7 +36,7 @@
   "bugs": {
     "url": "https://github.com/ademuri/deluminate/issues"
   },
-  "homepage": "https://deluminate.github.io",
+  "homepage": "https://github.com/ademuri/deluminate",
   "devDependencies": {
     "@eslint/js": "^9.8.0",
     "@playwright/test": "^1.57.0",
