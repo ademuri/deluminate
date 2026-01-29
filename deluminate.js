@@ -220,9 +220,55 @@ function processElements(elements) {
   }
 }
 
+const processingQueue = new Set();
+let processingScheduled = false;
+
+function scheduleProcessing() {
+  if (processingScheduled) return;
+  processingScheduled = true;
+  
+  const callback = window.requestIdleCallback || ((cb) => setTimeout(() => {
+      cb({
+        didTimeout: false, 
+        timeRemaining: () => 50
+      });
+  }, 1));
+
+  callback((deadline) => {
+    processingScheduled = false;
+    if (processingQueue.size === 0) return;
+
+    const elements = Array.from(processingQueue);
+    const chunkSize = 20; // Process in small chunks
+    let processedCount = 0;
+
+    while (processedCount < elements.length && (deadline.timeRemaining() > 0 || deadline.didTimeout)) {
+        const chunk = elements.slice(processedCount, processedCount + chunkSize);
+        processElements(chunk);
+        for (const el of chunk) {
+            processingQueue.delete(el);
+        }
+        processedCount += chunk.length;
+    }
+
+    if (processingQueue.size > 0) {
+        scheduleProcessing();
+    }
+  });
+}
+
+function queueForProcessing(elements) {
+    if (!elements || elements.length === 0) return;
+    for (let i = 0; i < elements.length; i++) {
+        processingQueue.add(elements[i]);
+    }
+    scheduleProcessing();
+}
+
 function deepImageProcessing() {
   if (deepImageProcessingComplete) return;
-  processElements(document.querySelectorAll('body *:not([style*="url"])'));
+  // Use the queue for initial processing too to avoid freezing immediately
+  queueForProcessing(document.querySelectorAll('body *:not([style*="url"])'));
   deepImageProcessingComplete = true;
 }
 
@@ -271,14 +317,6 @@ function init() {
   backdrop = document.createElement('div');
   backdrop.id = scheme_prefix + "deluminate_backdrop";
 
-  chrome.runtime.onMessage.addListener(onExtensionMessage);
-  chrome.runtime.sendMessage(
-    {'init': true, 'url': window.document.baseURI},
-    {},
-    onExtensionMessage,
-  );
-  document.addEventListener('keydown', onEvent, false);
-
   animGifHandler = new MutationObserver(function(mutations) {
     if (checkDisconnected()) return;
     for(let i=0; i<mutations.length; ++i) {
@@ -312,9 +350,17 @@ function init() {
       }
     }
     if (elementsToProcess.length > 0) {
-      processElements(elementsToProcess);
+      queueForProcessing(elementsToProcess);
     }
   });
+
+  chrome.runtime.onMessage.addListener(onExtensionMessage);
+  chrome.runtime.sendMessage(
+    {'init': true, 'url': window.document.baseURI},
+    {},
+    onExtensionMessage,
+  );
+  document.addEventListener('keydown', onEvent, false);
 
   setupFullscreenWorkaround();
 }

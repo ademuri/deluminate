@@ -176,7 +176,16 @@ export async function refreshStore() {
       new Promise((_, reject) => setTimeout(() => reject(new Error("Sync get timed out")), 2000))
     ]);
   } catch (e) {
-    console.warn("Failed to refresh store from sync (using defaults):", e);
+    console.warn("Failed to refresh store from sync (using defaults/backup):", e);
+    try {
+        const local = await api.storage.local.get("backup_sites");
+        if (local.backup_sites) {
+            console.log("Loaded sites from local backup.");
+            items.sites = local.backup_sites;
+        }
+    } catch (localErr) {
+        console.warn("Failed to load local backup:", localErr);
+    }
   }
   
   Object.assign(storeCache, items);
@@ -255,7 +264,10 @@ export function setSiteSettings(site, siteSettings) {
   settings.save(site, siteSettings);
   storeCache.sites = settings.export();
   try {
-    api.storage.local.set({sites: settings.exportLocal()});
+    api.storage.local.set({
+        sites: settings.exportLocal(),
+        backup_sites: storeCache.sites
+    });
   }
   catch(error) {
     console.warn(error)
@@ -267,7 +279,10 @@ export function delSiteSettings(site) {
   settings.remove(site);
   storeCache.sites = settings.export();
   try {
-    api.storage.local.set({sites: settings.exportLocal()});
+    api.storage.local.set({
+        sites: settings.exportLocal(),
+        backup_sites: storeCache.sites
+    });
   }
   catch(error) {
     console.warn(error)

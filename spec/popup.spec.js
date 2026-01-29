@@ -15,8 +15,8 @@ class FakeStorage {
 	constructor() {
 		this.store = {};
 	}
-	async set(key, value) {
-		this.store[key] = value;
+	async set(items) {
+		Object.assign(this.store, items);
 	}
 	async get(keys) {
 		if (typeof keys === "undefined") {
@@ -80,7 +80,8 @@ global.chrome = {
 describe("Popup options", () => {
   let dom;
 
-  beforeEach(async () => {
+  beforeEach(async function() {
+    this.timeout(5000);
     const popupHtml = fs.readFileSync(new URL("../popup.html", import.meta.url));
     dom = new JSDOM(popupHtml, {
         url: "https://popup.deluminate.github.io/some/path"

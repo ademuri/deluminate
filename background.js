@@ -195,15 +195,21 @@ function init() {
         (async () => {
           console.log("Fetching settings.");
           await syncStore();
-          console.log("Deluminate is ready (starting injection).");
-          injectContentScripts().then(() => console.log("Initial injection complete.")).catch(e => console.error("Initial injection failed:", e));
         })(),
         new Promise((_, reject) => setTimeout(() => reject(new Error("Initialization timed out")), 10000))
       ]);
     } catch (error) {
-      console.error("Error during initial setup:", error);
-      // We do not re-throw here to allow the extension to function (perhaps with defaults)
-      // even if initial sync/injection failed.
+      console.error("Error during initial setup (settings sync):", error);
+      // Fallback to defaults or partial state if sync fails/times out.
+    }
+    
+    // Always attempt injection, even if sync failed.
+    console.log("Deluminate is ready (starting injection).");
+    try {
+        await injectContentScripts();
+        console.log("Initial injection complete.");
+    } catch(e) {
+        console.error("Initial injection failed:", e);
     }
   })();
 
