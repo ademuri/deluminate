@@ -221,4 +221,25 @@ describe("Content Logic", () => {
 
     dom.window.getComputedStyle = originalGetComputedStyle;
   });
+
+  it("classifyTextColor handles getComputedStyle errors gracefully", () => {
+    // Override global.getComputedStyle used by classifyTextColor
+    const originalGlobalGetComputedStyle = global.getComputedStyle;
+    const originalDomGetComputedStyle = dom.window.getComputedStyle;
+    
+    const thrower = () => {
+        throw new Error("Failed to decode downloaded font");
+    };
+    
+    global.getComputedStyle = thrower;
+    dom.window.getComputedStyle = thrower;
+
+    // Should not throw
+    const result = logic.classifyTextColor(document);
+    // Expect null because all paragraphs are skipped due to error
+    expect(result).toBe(null);
+
+    global.getComputedStyle = originalGlobalGetComputedStyle;
+    dom.window.getComputedStyle = originalDomGetComputedStyle;
+  });
 });

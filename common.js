@@ -89,6 +89,14 @@ function parseSiteMods(sitemods) {
 
 const toBool = (str) => str !== "false" && Boolean(str);
 
+function safeJsonParse(str, fallback) {
+  try {
+    return JSON.parse(str);
+  } catch {
+    return fallback;
+  }
+}
+
 export function migrateV1toV2(v1) {
   const v2 = {version: 2, enabled: toBool(v1?.enabled ?? true)};
   const defaultFilter = (v1?.scheme ?? DEFAULT_SCHEME)
@@ -112,8 +120,8 @@ export function migrateV1toV2(v1) {
   defaultMods.push("dynamic");
   const settings = new Settings(defaultFilter, defaultMods);
 
-  const siteModifiers = JSON.parse(v1?.sitemodifiers ?? "{}");
-  const siteSchemes = JSON.parse(v1?.siteschemes ?? "{}");
+  const siteModifiers = safeJsonParse(v1?.sitemodifiers ?? "{}", {});
+  const siteSchemes = safeJsonParse(v1?.siteschemes ?? "{}", {});
   const domains = new Set([
     ...Object.keys(siteModifiers),
     ...Object.keys(siteSchemes),

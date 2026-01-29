@@ -123,4 +123,22 @@ describe("Import functionality", () => {
     const status = dom.window.document.getElementById('import_status');
     expect(status.textContent).toContain("Error: No data provided");
   });
+
+  it("handles corrupted legacy data gracefully (invalid nested JSON)", async function() {
+    const corruptedData = {
+        "enabled": "true",
+        "sitemodifiers": "{ invalid json here",
+        "siteschemes": "{}"
+    };
+    
+    const textarea = dom.window.document.getElementById('import_data');
+    textarea.value = JSON.stringify(corruptedData);
+    
+    await onImport();
+
+    const status = dom.window.document.getElementById('import_status');
+    // It should succeed with defaults/partial data rather than fail
+    expect(status.textContent).toContain("Import successful");
+    expect(getEnabled()).toBe(true);
+  });
 });

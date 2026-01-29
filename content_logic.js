@@ -64,6 +64,18 @@ function colorValenceRaw(r, g, b, a) {
     ;
 }
 
+function safeGetComputedStyle(elem) {
+  try {
+    return getComputedStyle(elem);
+  } catch {
+    return {
+      color: '',
+      display: 'none',
+      visibility: 'hidden'
+    };
+  }
+}
+
 function colorValence(color) {
   return colorValenceRaw(...colorToRGBA(color));
 }
@@ -72,7 +84,7 @@ function getBgImageType(tag) {
   let bgImage;
   try {
     bgImage = window.getComputedStyle(tag)['background-image'];
-  } catch (err) {
+  } catch {
     return null;
   }
   if (containsAny(bgImage, ['data:image/png', '.png', '.PNG'])) {
@@ -113,7 +125,7 @@ function classifyTextColor(rootNode = document) {
   const charTypes = [0, 0, 0];
   let total = 0;
   for (const p of paras) {
-    const {color, display, visibility} = getComputedStyle(p);
+    const {color, display, visibility} = safeGetComputedStyle(p);
     if (!color || display === "none" || visibility !== "visible") continue;
     const {width = 0, height = 0, top = 0} = p.getBoundingClientRect();
     if (width * height <= 0 || top > windowHeight) continue;
@@ -137,7 +149,7 @@ function classifyTextColor(rootNode = document) {
     while (treeWalker.nextNode()) {
       const text = treeWalker.currentNode;
       const elem = text.parentElement;
-      const {color, display, visibility} = getComputedStyle(elem);
+      const {color, display, visibility} = safeGetComputedStyle(elem);
       if (!color || display === "none" || visibility !== "visible") continue;
       const {width = 0, height = 0, top = 0} = elem.getBoundingClientRect();
       if (width * height <= 0 || top > windowHeight) continue;
