@@ -207,4 +207,18 @@ describe("Content Logic", () => {
     });
     expect(logic.checksPreferredScheme()).toBe(false);
   });
+
+  it("getBgImageType handles getComputedStyle errors gracefully", () => {
+    const div = document.createElement('div');
+    const originalGetComputedStyle = dom.window.getComputedStyle;
+
+    dom.window.getComputedStyle = () => {
+        throw new Error("Failed to decode downloaded font");
+    };
+
+    const result = logic.getBgImageType(div);
+    expect(result).toBe(null);
+
+    dom.window.getComputedStyle = originalGetComputedStyle;
+  });
 });

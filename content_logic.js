@@ -69,7 +69,12 @@ function colorValence(color) {
 }
 
 function getBgImageType(tag) {
-  const bgImage = window.getComputedStyle(tag)['background-image'];
+  let bgImage;
+  try {
+    bgImage = window.getComputedStyle(tag)['background-image'];
+  } catch (err) {
+    return null;
+  }
   if (containsAny(bgImage, ['data:image/png', '.png', '.PNG'])) {
     return 'png';
   } else if (containsAny(bgImage, ['.gif', '.GIF'])) {
