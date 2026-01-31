@@ -87,7 +87,11 @@ describe('Initialization Timeout', () => {
     global.setTimeout.original = originalSetTimeout;
 
     // Mock navigator
-    global.navigator = { appVersion: 'Linux' };
+    Object.defineProperty(global, 'navigator', {
+      value: { appVersion: 'Linux' },
+      writable: true,
+      configurable: true
+    });
   });
 
   afterEach(() => {
