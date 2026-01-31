@@ -23,7 +23,7 @@ jobs:
   Test:
     runs-on: ubuntu-latest
     container:
-      image: mcr.microsoft.com/playwright:v1.57.0-noble
+      image: mcr.microsoft.com/playwright:v1.58.1-noble 
       # Run as root to fix permission issues with Github Actions workspace.
       # SYS_ADMIN is recommended for running Chrome in Docker.
       options: --user root --cap-add=SYS_ADMIN
