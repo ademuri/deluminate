@@ -265,3 +265,12 @@ html[hc*="delumine-noimg"] body canvas.canvas-renderer,
 html[hc*="delumine-smart"] body canvas.canvas-renderer {
   filter: none !important;
 }
+
+/* Fix for fullscreen video inversion.
+ * When an element is fullscreen, it is promoted to the top layer and escapes
+ * the root element's filter. If we leave the un-inversion filter on it,
+ * it will look inverted. So we must remove the filter in fullscreen.
+ */
+:fullscreen {
+  filter: none !important;
+}
