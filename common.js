@@ -112,10 +112,10 @@ export function migrateV1toV2(v1) {
     defaultMods.push("low_contrast");
   }
   if (toBool(v1?.kill_background)) {
-    defaultMods.push("killbg");
+    defaultMods.push("kill_background");
   }
   if (toBool(v1?.force_text)) {
-    defaultMods.push("forceinput");
+    defaultMods.push("force_text");
   }
   defaultMods.push("dynamic");
   const settings = new Settings(defaultFilter, defaultMods);
@@ -132,8 +132,8 @@ export function migrateV1toV2(v1) {
       parseSiteMods(siteModifiers[domain]).map(mod => ({
         "low-contrast": "low_contrast",
         "low_contrast": "low_contrast",
-        "kill_background": "killbg",
-        "force_text": "forceinput",
+        "kill_background": "kill_background",
+        "force_text": "force_text",
       })[mod]).filter(Boolean),
     );
     settings.save(domain, siteSettings);

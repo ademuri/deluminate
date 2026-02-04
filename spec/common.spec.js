@@ -88,13 +88,13 @@ describe("Global settings functions", function() {
   });
 
   it("can enable force text inversion", function() {
-    setDefaultModifiers(['forceinput']);
-    expect([...getSiteSettings().mods]).toContain("forceinput");
+    setDefaultModifiers(['force_text']);
+    expect([...getSiteSettings().mods]).toContain("force_text");
   });
 
   it("can enable killing backgrounds", function() {
-    setDefaultModifiers(['killbg']);
-    expect([...getSiteSettings().mods]).toContain("killbg");
+    setDefaultModifiers(['kill_background']);
+    expect([...getSiteSettings().mods]).toContain("kill_background");
   });
 
   it("uses smart inversion by default", function() {
@@ -145,27 +145,27 @@ describe("Site manipulation functions", function() {
 
   it("can add site modifiers", function() {
     addSiteModifier("example.com", 'low_contrast');
-    addSiteModifier("example.com", 'killbg');
+    addSiteModifier("example.com", 'kill_background');
     const mods = [...getSiteSettings("example.com").mods];
     expect(mods).toContain("low_contrast");
-    expect(mods).toContain("killbg");
+    expect(mods).toContain("kill_background");
   });
 
   it("can remove site modifiers", function() {
     const expectedModifiers = 'low_contrast dynamic'
     addSiteModifier("example.com", 'low_contrast');
-    addSiteModifier("example.com", 'killbg');
+    addSiteModifier("example.com", 'kill_background');
     addSiteModifier("example.com", 'dynamic');
-    delSiteModifier("example.com", 'killbg');
+    delSiteModifier("example.com", 'kill_background');
     const mods = [...getSiteSettings("example.com").mods];
     expect(mods).toContain("low_contrast");
     expect(mods).toContain("dynamic");
-    expect(mods).not.toContain("killbg");
+    expect(mods).not.toContain("kill_background");
   });
 
   it("can clear all site modifiers", async function() {
     addSiteModifier("example.com", 'low_contrast');
-    addSiteModifier("example.com", 'killbg');
+    addSiteModifier("example.com", 'kill_background');
     await resetSiteSchemes();
     const mods = [...getSiteSettings("example.com").mods];
     expect(mods).toHaveLength(0);

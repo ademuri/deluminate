@@ -79,7 +79,7 @@ describe("Import functionality", () => {
           "version": 2,
           "enabled": false,
           "sites": [
-              ["test.com", "dim1", "killbg"]
+              ["test.com", "dim1", "kill_background"]
           ]
       };
 
@@ -92,7 +92,7 @@ describe("Import functionality", () => {
 
       const siteSettings = getSiteSettings("test.com");
       expect(siteSettings.filter).toBe("dim1");
-      expect(siteSettings.mods).toContain("killbg");
+      expect(siteSettings.mods).toContain("kill_background");
   });
 
   it("handles invalid JSON gracefully", async function() {

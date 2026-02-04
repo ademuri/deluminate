@@ -48,7 +48,7 @@ test.describe('Settings Interaction', () => {
     await popupPage.goto(`chrome-extension://${extensionId}/popup.html`);
 
     // Toggle Kill Backgrounds
-    await popupPage.locator('input#killbg').click();
+    await popupPage.locator('input#kill_background').click();
 
     // The 'hc' attribute is a space-separated list of classes/modifiers
     await expect(html).toHaveAttribute('hc', /kill_background/);

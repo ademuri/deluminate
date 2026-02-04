@@ -90,38 +90,85 @@ html[hc^="noinvert-dim5"][hc*="low-contrast"] {
 html[hc*="delumine-noimg"]:not([hc*="dynamic"][looks-dark]) :is(
 img,
 /* Check for "url" in the style attribute, which is usually a fancy way to specify an image */
-[style*="url"]:not([style*="transparent"]),
+[style*="url"],
 [deluminate_imageType],
 canvas,
 embed,
-object,
-video) {
+object) {
+  filter: hue-rotate(180deg) invert(100%);
+}
+html[hc*="delumine-noimg"]:not([hc*="dynamic"][looks-dark]) :is(
+	video,
+	iframe[allowfullscreen]) {
   filter: hue-rotate(180deg) invert(100%);
 }
 /* Avoid performing the uninversion process on anything that is a descendant of
  * something uninverted. */
+/* Image -> Image */
+html[hc*="delumine-noimg"]:not([hc*="dynamic"][looks-dark]) img :is(
+img,
+[style*="url"],
+[deluminate_imageType],
+canvas,
+embed,
+object) {
+  filter: none;
+}
 html[hc*="delumine-noimg"]:not([hc*="dynamic"][looks-dark]) :is(
-img,
-[style*="url"]:not([style*="transparent"]),
+[style*="url"],
 [deluminate_imageType],
 canvas,
 embed,
-object,
-video) :is(
+object) :is(
 img,
-[style*="url"]:not([style*="transparent"]),
+[style*="url"],
 [deluminate_imageType],
 canvas,
 embed,
-object,
-video) {
+object) {
+  filter: none;
+}
+/* Image -> Video/Iframe */
+html[hc*="delumine-noimg"]:not([hc*="dynamic"][looks-dark]) img :is(
+	video,
+	iframe[allowfullscreen]) {
+  filter: none;
+}
+html[hc*="delumine-noimg"]:not([hc*="dynamic"][looks-dark]) :is(
+[style*="url"],
+[deluminate_imageType],
+canvas,
+embed,
+object) :is(
+	video,
+	iframe[allowfullscreen]) {
+  filter: none;
+}
+/* Video/Iframe -> Image */
+html[hc*="delumine-noimg"]:not([hc*="dynamic"][looks-dark]) :is(
+	video,
+	iframe[allowfullscreen]) :is(
+img,
+[style*="url"],
+[deluminate_imageType],
+canvas,
+embed,
+object) {
+  filter: none;
+}
+/* Video/Iframe -> Video/Iframe */
+html[hc*="delumine-noimg"]:not([hc*="dynamic"][looks-dark]) :is(
+	video,
+	iframe[allowfullscreen]) :is(
+	video,
+	iframe[allowfullscreen]) {
   filter: none;
 }
 /* Reinvert iframes inside tags with background-images specified. */
 html[hc*="delumine-noimg"]:not([hc*="dynamic"][looks-dark]) :is(
 img,
 /* Check for "url" in the style attribute, which is usually a fancy way to specify an image */
-[style*="url"]:not([style*="transparent"]),
+[style*="url"],
 [deluminate_imageType],
 canvas,
 embed,
@@ -152,14 +199,38 @@ html[hc*="delumine-smart"]:not([hc*="dynamic"][looks-dark]) body :is(
 	[style*=".WEBP"],
 	/* It's usually not desireable to invert these tags. */
 	embed:not([type$="pdf"]),
-	object,
-	video) {
+	object) {
+  filter: hue-rotate(180deg) invert(100%);
+}
+html[hc*="delumine-smart"]:not([hc*="dynamic"][looks-dark]) body :is(
+	video,
+	iframe[allowfullscreen]) {
   filter: hue-rotate(180deg) invert(100%);
 }
 /* Avoid performing the uninversion process on anything that is a descendant of
  * something uninverted. */
+/* Image -> Image */
+html[hc*="delumine-smart"]:not([hc*="dynamic"][looks-dark]) body img :is(
+	img,
+	[itemprop="photo"],
+	[itemprop="image"],
+	[role="img"],
+	[data-src],
+	[data-canonical-src],
+	[src^="data:image/jpeg"],
+	[deluminate_imageType="jpg"],
+	[deluminate_imageType="webp"],
+	[style*=".jpg"],
+	[style*=".JPG"],
+	[style*=".jpeg"],
+	[style*=".JPEG"],
+	[style*=".webp"],
+	[style*=".WEBP"],
+	embed:not([type$="pdf"]),
+	object) {
+  filter: none;
+}
 html[hc*="delumine-smart"]:not([hc*="dynamic"][looks-dark]) body :is(
-	img:not([src$=".png"]):not([src$=".gif"]):not([src$=".PNG"]):not([src$=".GIF"]):not([src^="data:image"]):not([src^="blob:"]):not([aria-hidden="true"][alt]:not([alt=""])),
 	[itemprop="photo"],
 	[itemprop="image"],
 	[role="img"],
@@ -175,9 +246,8 @@ html[hc*="delumine-smart"]:not([hc*="dynamic"][looks-dark]) body :is(
 	[style*=".webp"],
 	[style*=".WEBP"],
 	embed:not([type$="pdf"]),
-	object,
-	video) :is(
-	img:not([src$=".png"]):not([src$=".gif"]):not([src$=".PNG"]):not([src$=".GIF"]):not([src^="data:image"]):not([src^="blob:"]):not([aria-hidden="true"][alt]:not([alt=""])),
+	object) :is(
+	img,
 	[itemprop="photo"],
 	[itemprop="image"],
 	[role="img"],
@@ -193,13 +263,70 @@ html[hc*="delumine-smart"]:not([hc*="dynamic"][looks-dark]) body :is(
 	[style*=".webp"],
 	[style*=".WEBP"],
 	embed:not([type$="pdf"]),
-	object,
-	video) {
+	object) {
+  filter: none;
+}
+/* Image -> Video/Iframe */
+html[hc*="delumine-smart"]:not([hc*="dynamic"][looks-dark]) body img :is(
+	video,
+	iframe[allowfullscreen]) {
+  filter: none;
+}
+html[hc*="delumine-smart"]:not([hc*="dynamic"][looks-dark]) body :is(
+	[itemprop="photo"],
+	[itemprop="image"],
+	[role="img"],
+	[data-src],
+	[data-canonical-src],
+	[src^="data:image/jpeg"],
+	[deluminate_imageType="jpg"],
+	[deluminate_imageType="webp"],
+	[style*=".jpg"],
+	[style*=".JPG"],
+	[style*=".jpeg"],
+	[style*=".JPEG"],
+	[style*=".webp"],
+	[style*=".WEBP"],
+	embed:not([type$="pdf"]),
+	object) :is(
+	video,
+	iframe[allowfullscreen]) {
+  filter: none;
+}
+/* Video/Iframe -> Image */
+html[hc*="delumine-smart"]:not([hc*="dynamic"][looks-dark]) body :is(
+	video,
+	iframe[allowfullscreen]) :is(
+	img,
+	[itemprop="photo"],
+	[itemprop="image"],
+	[role="img"],
+	[data-src],
+	[data-canonical-src],
+	[src^="data:image/jpeg"],
+	[deluminate_imageType="jpg"],
+	[deluminate_imageType="webp"],
+	[style*=".jpg"],
+	[style*=".JPG"],
+	[style*=".jpeg"],
+	[style*=".JPEG"],
+	[style*=".webp"],
+	[style*=".WEBP"],
+	embed:not([type$="pdf"]),
+	object) {
+  filter: none;
+}
+/* Video/Iframe -> Video/Iframe */
+html[hc*="delumine-smart"]:not([hc*="dynamic"][looks-dark]) body :is(
+	video,
+	iframe[allowfullscreen]) :is(
+	video,
+	iframe[allowfullscreen]) {
   filter: none;
 }
 /* Reinvert iframes inside tags with background-images specified. */
 html[hc*="delumine-smart"]:not([hc*="dynamic"][looks-dark]) body :is(
-	img:not([src$=".png"]):not([src$=".gif"]):not([src$=".PNG"]):not([src$=".GIF"]):not([src^="data:image"]):not([src^="blob:"]):not([aria-hidden="true"][alt]:not([alt=""])),
+	img,
 	[itemprop="photo"],
 	[itemprop="image"],
 	[role="img"],
@@ -214,10 +341,39 @@ html[hc*="delumine-smart"]:not([hc*="dynamic"][looks-dark]) body :is(
 	[style*=".JPEG"],
 	[style*=".webp"],
 	[style*=".WEBP"],
-	embed:not([type$="pdf"]),
+	embed,
 	object,
 	video) iframe {
   filter: hue-rotate(180deg) invert(100%);
+}
+
+/* For the -all variant, we still want to uninvert videos and iframes (but not images). */
+html[hc~="delumine-all"]:not([hc*="dynamic"][looks-dark]) :is(
+	embed:not([type$="pdf"]),
+	object,
+	video,
+	iframe[allowfullscreen]) {
+  filter: hue-rotate(180deg) invert(100%);
+}
+/* Cleanup for -all variant */
+/* Anything -> Video/Object/Embed */
+html[hc~="delumine-all"]:not([hc*="dynamic"][looks-dark]) :is(
+	embed,
+	object,
+	video,
+	iframe[allowfullscreen]) :is(
+	embed,
+	object,
+	video) {
+  filter: none;
+}
+/* Anything -> Iframe */
+html[hc~="delumine-all"]:not([hc*="dynamic"][looks-dark]) :is(
+	embed,
+	object,
+	video,
+	iframe[allowfullscreen]) iframe[allowfullscreen] {
+  filter: none;
 }
 
 /* Force text to plain black text on white (which, when inverted, is the

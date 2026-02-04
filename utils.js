@@ -353,8 +353,13 @@ export const Filter = Object.freeze({
 });
 
 export const Modifier = Object.freeze({
+  'low-contrast': 'low-contrast',
   low_contrast: 'low-contrast',
+  'kill-background': 'kill_background',
+  kill_background: 'kill_background',
   killbg: 'kill_background',
+  'force-text': 'force_text',
+  force_text: 'force_text',
   forceinput: 'force_text',
   dynamic: 'dynamic',
   ignorebg: 'ignorebg',
