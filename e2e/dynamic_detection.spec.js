@@ -53,4 +53,40 @@ test.describe('Dynamic Dark Site Detection', () => {
     // It SHOULD have 'looks-dark' attribute
     await expect(html).toHaveAttribute('looks-dark', '');
   });
+
+  test('should react to dynamic DOM changes that make the page dark', async ({ page, context, server, extensionId }) => {
+    await page.goto(`${server}/basic.html`);
+    const html = page.locator('html');
+
+    // Enable dynamic in popup
+    const popupPage = await context.newPage();
+    await popupPage.goto(`chrome-extension://${extensionId}/popup.html`);
+    await popupPage.locator('input[value="smart"]').click();
+    const dynamicCheckbox = popupPage.locator('input#dynamic');
+    if (!await dynamicCheckbox.isChecked()) {
+      await dynamicCheckbox.click();
+    }
+
+    await page.bringToFront();
+    // Initially it's a light site (basic.html is white background)
+    await expect(html).not.toHaveAttribute('looks-dark');
+
+    // Now dynamically change it to dark
+    await page.evaluate(() => {
+        const style = document.createElement('style');
+        style.textContent = 'body { background-color: #222 !important; color: #eee !important; }';
+        document.head.appendChild(style);
+        
+        // Also add some text to ensure classifyTextColor has something to work with
+        const p = document.createElement('p');
+        p.textContent = "This is some new dark text ".repeat(50);
+        document.body.appendChild(p);
+    });
+
+    // Wait for the debounce timer (500ms)
+    await page.waitForTimeout(1000);
+    
+    // Now it SHOULD have 'looks-dark'
+    await expect(html).toHaveAttribute('looks-dark', '');
+  });
 });

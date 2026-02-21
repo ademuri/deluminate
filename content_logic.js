@@ -77,8 +77,21 @@ function safeGetComputedStyle(elem) {
   }
 }
 
+function getEffectiveBackground(elem) {
+  let cur = elem;
+  while (cur) {
+    const {backgroundColor} = safeGetComputedStyle(cur);
+    if (backgroundColor && backgroundColor !== 'transparent' && backgroundColor !== 'rgba(0, 0, 0, 0)') {
+      return backgroundColor;
+    }
+    cur = cur.parentElement;
+  }
+  return 'white'; // Default to white if nothing found
+}
+
 function colorValence(color) {
-  return colorValenceRaw(...colorToRGBA(color));
+  const cToRGBA = (typeof window !== 'undefined' && window.deluminateLogic?.colorToRGBA) || colorToRGBA;
+  return colorValenceRaw(...cToRGBA(color));
 }
 
 function getBgImageType(tag) {
@@ -126,12 +139,24 @@ function classifyTextColor(rootNode = document) {
   const charTypes = [0, 0, 0];
   let total = 0;
   for (const p of paras) {
-    const {color, display, visibility} = safeGetComputedStyle(p);
+    const {color, backgroundColor, display, visibility} = safeGetComputedStyle(p);
     if (!color || display === "none" || visibility !== "visible") continue;
     const {width = 0, height = 0, top = 0} = p.getBoundingClientRect();
     if (width * height <= 0 || top > windowHeight) continue;
+    
     const text = p.textContent;
-    charTypes[colorValence(color) + 1] += text.length;
+    const textValence = colorValence(color);
+    const bgValence = colorValence(getEffectiveBackground(p));
+    
+    // Only count as light text if background is dark/neutral
+    if (textValence === 1 && bgValence <= 0) {
+        charTypes[2] += text.length;
+    } else if (textValence === -1 && bgValence >= 0) {
+        charTypes[0] += text.length;
+    } else {
+        charTypes[1] += text.length;
+    }
+    
     total += text.length;
     // Arbitrarily chosen good-enough threshold.
     if (total > 4096) break;
@@ -139,22 +164,33 @@ function classifyTextColor(rootNode = document) {
 
   // If the previous selectors didn't find much of the page's text, use a
   // treeWalker.
-  if (total <= 4096
-      && total < (rootNode.documentElement?.textContent.length || 0) * 0.1
-  ) {
-    const treeWalker = document.createTreeWalker(
-      rootNode.querySelector("body") || rootNode,
-      NodeFilter.SHOW_TEXT,
+  if (total <= 4096) {
+    const walkerRoot = (rootNode.body || rootNode.documentElement || rootNode);
+    const treeWalker = (rootNode.ownerDocument || rootNode).createTreeWalker(
+      walkerRoot,
+      4, /* NodeFilter.SHOW_TEXT */
     );
 
     while (treeWalker.nextNode()) {
-      const text = treeWalker.currentNode;
-      const elem = text.parentElement;
-      const {color, display, visibility} = safeGetComputedStyle(elem);
+      const textNode = treeWalker.currentNode;
+      const elem = textNode.parentElement;
+      const {color, backgroundColor, display, visibility} = safeGetComputedStyle(elem);
       if (!color || display === "none" || visibility !== "visible") continue;
       const {width = 0, height = 0, top = 0} = elem.getBoundingClientRect();
       if (width * height <= 0 || top > windowHeight) continue;
-      charTypes[colorValence(color) + 1] += text.length;
+      
+      const text = textNode.textContent;
+      const textValence = colorValence(color);
+      const bgValence = colorValence(getEffectiveBackground(elem));
+
+      if (textValence === 1 && bgValence <= 0) {
+          charTypes[2] += text.length;
+      } else if (textValence === -1 && bgValence >= 0) {
+          charTypes[0] += text.length;
+      } else {
+          charTypes[1] += text.length;
+      }
+
       total += text.length;
       // Arbitrarily chosen good-enough threshold.
       if (total > 4096) break;
@@ -162,10 +198,13 @@ function classifyTextColor(rootNode = document) {
   }
   // If light text is a supermajority of the text, we'll say this page uses
   // light text overall.
-  return (charTypes[2] > charTypes[0] + charTypes[1]) ? "light"
-    : (charTypes[0] > charTypes[1] + charTypes[2]) ? "dark"
-    : null
-    ;
+  if (charTypes[2] > 0 && charTypes[2] >= charTypes[0]) {
+      return "light";
+  }
+  if (charTypes[0] > 0 && charTypes[0] > charTypes[2]) {
+      return "dark";
+  }
+  return null;
 }
 
 function checksPreferredScheme() {

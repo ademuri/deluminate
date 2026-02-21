@@ -6,6 +6,8 @@ let scheme_prefix;
 let backdrop;
 let animGifHandler;
 let newImageHandler;
+let darkDetectionHandler;
+let darkDetectionTimer;
 let rootWatcher;
 const rootAttribute = "hc";
 
@@ -81,11 +83,25 @@ function onExtensionMessage(request, sender, sendResponse) {
     afterDomLoaded(() => {
       detectAlreadyDark();
       backdrop.style.display = "none";
+      if (darkDetectionHandler) {
+          darkDetectionHandler.observe(document.documentElement, {
+              childList: true,
+              subtree: true,
+              attributes: true,
+              attributeFilter: ['style', 'class']
+          });
+      }
     });
-  } else if (request.enabled) {
-    afterDomLoaded(() => {
-      backdrop.style.display = "none";
-    });
+  } else {
+    if (darkDetectionHandler) {
+        darkDetectionHandler.disconnect();
+    }
+    document.documentElement.removeAttribute('looks-dark');
+    if (request.enabled) {
+      afterDomLoaded(() => {
+        backdrop.style.display = "none";
+      });
+    }
   }
   if (request.enabled && request.settings.detect_animation === 'enabled' &&
       request.scheme == 'delumine-smart') {
@@ -277,9 +293,7 @@ function restartDeepImageProcessing() {
   deepImageProcessing();
 }
 
-let detectAlreadyDarkComplete = false;
 function detectAlreadyDark() {
-  if (detectAlreadyDarkComplete) return;
   const textColor = classifyTextColor();
   if (textColor === "light") {
     // Light text means dark mode... probably.
@@ -289,7 +303,6 @@ function detectAlreadyDark() {
   } else {
     document.documentElement.removeAttribute('looks-dark');
   }
-  detectAlreadyDarkComplete = true;
 }
 
 function afterDomLoaded(cb) {
@@ -354,6 +367,12 @@ function init() {
     }
   });
 
+  darkDetectionHandler = new MutationObserver(function(mutations) {
+    if (checkDisconnected()) return;
+    clearTimeout(darkDetectionTimer);
+    darkDetectionTimer = setTimeout(detectAlreadyDark, 500);
+  });
+
   chrome.runtime.onMessage.addListener(onExtensionMessage);
   chrome.runtime.sendMessage(
     {'init': true, 'url': window.document.baseURI},
@@ -366,12 +385,13 @@ function init() {
 }
 
 function unloadAll() {
-  const watchers = [animGifHandler, newImageHandler, rootWatcher];
+  const watchers = [animGifHandler, newImageHandler, darkDetectionHandler, rootWatcher];
   for (const watcher of watchers) {
     if (watcher?.disconnect) {
       watcher.disconnect();
     }
   }
+  clearTimeout(darkDetectionTimer);
   document.removeEventListener('keydown', onEvent, false);
 }
 
