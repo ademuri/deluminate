@@ -70,6 +70,7 @@ function safeGetComputedStyle(elem) {
   } catch {
     return {
       color: '',
+      backgroundColor: '',
       display: 'none',
       visibility: 'hidden'
     };
@@ -171,14 +172,14 @@ function checksPreferredScheme() {
   for (const css of document?.styleSheets ?? []) {
     try {
       for (const m of css.media ?? []) {
-        if (m.includes("prefers-color-scheme")) {
+        if (m.includes("prefers-color-scheme: dark")) {
           return true;
         }
       }
       const cssRules = css.rules;
       for (const rule of cssRules) {
         for (const m of rule.media ?? []) {
-          if (m.includes("prefers-color-scheme")) {
+          if (m.includes("prefers-color-scheme: dark")) {
             return true;
           }
         }
