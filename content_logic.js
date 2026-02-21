@@ -139,7 +139,7 @@ function classifyTextColor(rootNode = document) {
   const charTypes = [0, 0, 0];
   let total = 0;
   for (const p of paras) {
-    const {color, backgroundColor, display, visibility} = safeGetComputedStyle(p);
+    const {color, display, visibility} = safeGetComputedStyle(p);
     if (!color || display === "none" || visibility !== "visible") continue;
     const {width = 0, height = 0, top = 0} = p.getBoundingClientRect();
     if (width * height <= 0 || top > windowHeight) continue;
@@ -174,7 +174,7 @@ function classifyTextColor(rootNode = document) {
     while (treeWalker.nextNode()) {
       const textNode = treeWalker.currentNode;
       const elem = textNode.parentElement;
-      const {color, backgroundColor, display, visibility} = safeGetComputedStyle(elem);
+      const {color, display, visibility} = safeGetComputedStyle(elem);
       if (!color || display === "none" || visibility !== "visible") continue;
       const {width = 0, height = 0, top = 0} = elem.getBoundingClientRect();
       if (width * height <= 0 || top > windowHeight) continue;

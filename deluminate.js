@@ -367,7 +367,7 @@ function init() {
     }
   });
 
-  darkDetectionHandler = new MutationObserver(function(mutations) {
+  darkDetectionHandler = new MutationObserver(function() {
     if (checkDisconnected()) return;
     clearTimeout(darkDetectionTimer);
     darkDetectionTimer = setTimeout(detectAlreadyDark, 500);
