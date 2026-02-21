@@ -125,6 +125,25 @@ function loadSettingsDisplay(store) {
     }
     return element;
   }
+  function makeHeader(text, title) {
+    const span = document.createElement("span");
+    span.textContent = text;
+    span.title = title;
+    span.style.textDecoration = "underline";
+    span.style.textDecorationStyle = "dotted";
+    span.style.textAlign = "center";
+    span.style.cursor = "help";
+    return span;
+  }
+  function makeModSpan(enabled) {
+    const span = document.createElement("span");
+    span.textContent = enabled ? "✓" : "";
+    span.style.textAlign = "center";
+    return span;
+  }
+  function hasMod(mods, ...variants) {
+    return mods.some(mod => variants.includes(mod));
+  }
   function makeSiteDiv([url, filter, ...mods]) {
     const checkbox = makeTag("input");
     checkbox.type = "checkbox";
@@ -139,7 +158,11 @@ function loadSettingsDisplay(store) {
       deleteBtn,
       makeTag('span', url || "DEFAULT"),
       makeTag('span', filter),
-      makeTag('span', mods.join(', ')),
+      makeModSpan(hasMod(mods, 'low_contrast', 'low-contrast')),
+      makeModSpan(hasMod(mods, 'force_text', 'force-text', 'forceinput')),
+      makeModSpan(hasMod(mods, 'kill_background', 'kill-background', 'killbg')),
+      makeModSpan(hasMod(mods, 'dynamic')),
+      makeModSpan(hasMod(mods, 'ignorebg')),
     );
     if (url) {
       deleteBtn.className = "delete-button";
@@ -174,7 +197,11 @@ function loadSettingsDisplay(store) {
     makeTag("span", ""),
     makeTag("span", "Website"),
     makeTag("span", "Filter"),
-    makeTag("span", "Options"),
+    makeHeader("LC", "Low Contrast"),
+    makeHeader("AIT", "Aggressively Invert Text Input"),
+    makeHeader("KB", "Kill Backgrounds"),
+    makeHeader("D", "Avoid Inverting Dark Sites"),
+    makeHeader("IB", "Leave CSS Backgrounds Inverted"),
   );
   heading.id = "settings-heading";
   settingsDiv.appendChild(heading);
