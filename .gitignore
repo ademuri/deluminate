@@ -2,6 +2,7 @@ build/
 *.zip
 
 node_modules/
+.npm-cache
 
 # Test output
 spec/**/*.xml
