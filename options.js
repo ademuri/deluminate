@@ -201,7 +201,7 @@ function loadSettingsDisplay(store) {
     makeHeader("AIT", "Aggressively Invert Text Input"),
     makeHeader("KB", "Kill Backgrounds"),
     makeHeader("D", "Avoid Inverting Dark Sites"),
-    makeHeader("IB", "Leave CSS Backgrounds Inverted"),
+    makeHeader("BI", "Leave CSS Backgrounds Inverted"),
   );
   heading.id = "settings-heading";
   settingsDiv.appendChild(heading);
