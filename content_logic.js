@@ -1,245 +1,247 @@
-(function() {
-function containsAny(haystack, needleList) {
-  for (let i = 0; i < needleList.length; ++i) {
-    if (haystack.indexOf(needleList[i]) >= 0) {
-      return true;
-    }
-  }
-  return false;
-}
-
-const colorToRGBA = (function() {
-  // Use a canvas to normalize colors for computing.
-  // Note: In a test environment, document might be provided by JSDOM.
-  let canvas;
-  let ctx;
-
-  const cache = {};
-  function memoize(f) {
-    const memoized = (key) => {
-      if (!(key in cache)) {
-        // Simple LRU-ish: if too big, clear half.
-        const keys = Object.keys(cache);
-        if (keys.length > 1000) {
-          for (let i = 0; i < 500; ++i) {
-            delete cache[keys[i]];
-          }
-        }
-        cache[key] = f(key);
+(function () {
+  function containsAny(haystack, needleList) {
+    for (let i = 0; i < needleList.length; ++i) {
+      if (haystack.indexOf(needleList[i]) >= 0) {
+        return true;
       }
-      return cache[key];
-    };
-    memoized._cache = cache;
-    return memoized;
-  }
-
-  return memoize(function(c) {
-    if ((!canvas || (typeof document !== 'undefined' && canvas.ownerDocument !== document)) &&
-        typeof document !== 'undefined') {
-      canvas = document.createElement('canvas');
-      canvas.width = canvas.height = 1;
-      ctx = canvas.getContext('2d', {willReadFrequently: true});
     }
-    if (!ctx) return [0, 0, 0, 0];
-    ctx.clearRect(0, 0, 1, 1);
-    ctx.fillStyle = c;
-    ctx.fillRect(0, 0, 1, 1);
-    return [...ctx.getImageData(0, 0, 1, 1).data];
-  });
-})();
-
-const grayMargin = 64;
-const alphaFactor = (255 + grayMargin) / 255;
-
-function colorValenceRaw(r, g, b, a) {
-  // Simple YIQ luminance calculation, scaled to (255 * 3) for convenience.
-  const lum = ((r*229)+(g*449)+(b*87))/255;
-  // Alpha transparency widens the effective gray range from the middle third
-  // (gray margin excluded) at 100% opaque to the whole range at 0% opaque.
-  const alphaRange = a * alphaFactor;
-  const grayMin = alphaRange, grayMax = (255 * 3) - alphaRange;
-  return lum < grayMin ? -1
-    : lum > grayMax ? 1
-    : 0
-    ;
-}
-
-function safeGetComputedStyle(elem) {
-  try {
-    return getComputedStyle(elem);
-  } catch {
-    return {
-      color: '',
-      backgroundColor: '',
-      display: 'none',
-      visibility: 'hidden'
-    };
+    return false;
   }
-}
 
-function getEffectiveBackground(elem) {
-  let cur = elem;
-  while (cur) {
-    const {backgroundColor} = safeGetComputedStyle(cur);
-    if (backgroundColor && backgroundColor !== 'transparent' && backgroundColor !== 'rgba(0, 0, 0, 0)') {
-      return backgroundColor;
+  const colorToRGBA = (function () {
+    // Use a canvas to normalize colors for computing.
+    // Note: In a test environment, document might be provided by JSDOM.
+    let canvas;
+    let ctx;
+
+    const cache = {};
+    function memoize(f) {
+      const memoized = (key) => {
+        if (!(key in cache)) {
+          // Simple LRU-ish: if too big, clear half.
+          const keys = Object.keys(cache);
+          if (keys.length > 1000) {
+            for (let i = 0; i < 500; ++i) {
+              delete cache[keys[i]];
+            }
+          }
+          cache[key] = f(key);
+        }
+        return cache[key];
+      };
+      memoized._cache = cache;
+      return memoized;
     }
-    cur = cur.parentElement;
+
+    return memoize(function (c) {
+      if (
+        (!canvas || (typeof document !== 'undefined' && canvas.ownerDocument !== document)) &&
+        typeof document !== 'undefined'
+      ) {
+        canvas = document.createElement('canvas');
+        canvas.width = canvas.height = 1;
+        ctx = canvas.getContext('2d', { willReadFrequently: true });
+      }
+      if (!ctx) return [0, 0, 0, 0];
+      ctx.clearRect(0, 0, 1, 1);
+      ctx.fillStyle = c;
+      ctx.fillRect(0, 0, 1, 1);
+      return [...ctx.getImageData(0, 0, 1, 1).data];
+    });
+  })();
+
+  const grayMargin = 64;
+  const alphaFactor = (255 + grayMargin) / 255;
+
+  function colorValenceRaw(r, g, b, a) {
+    // Simple YIQ luminance calculation, scaled to (255 * 3) for convenience.
+    const lum = (r * 229 + g * 449 + b * 87) / 255;
+    // Alpha transparency widens the effective gray range from the middle third
+    // (gray margin excluded) at 100% opaque to the whole range at 0% opaque.
+    const alphaRange = a * alphaFactor;
+    const grayMin = alphaRange,
+      grayMax = 255 * 3 - alphaRange;
+    return lum < grayMin ? -1 : lum > grayMax ? 1 : 0;
   }
-  return 'white'; // Default to white if nothing found
-}
 
-function colorValence(color) {
-  const cToRGBA = (typeof window !== 'undefined' && window.deluminateLogic?.colorToRGBA) || colorToRGBA;
-  return colorValenceRaw(...cToRGBA(color));
-}
+  function safeGetComputedStyle(elem) {
+    try {
+      return getComputedStyle(elem);
+    } catch {
+      return {
+        color: '',
+        backgroundColor: '',
+        display: 'none',
+        visibility: 'hidden',
+      };
+    }
+  }
 
-function getBgImageType(tag) {
-  let bgImage;
-  try {
-    bgImage = window.getComputedStyle(tag)['background-image'];
-  } catch {
+  function getEffectiveBackground(elem) {
+    let cur = elem;
+    while (cur) {
+      const { backgroundColor } = safeGetComputedStyle(cur);
+      if (
+        backgroundColor &&
+        backgroundColor !== 'transparent' &&
+        backgroundColor !== 'rgba(0, 0, 0, 0)'
+      ) {
+        return backgroundColor;
+      }
+      cur = cur.parentElement;
+    }
+    return 'white'; // Default to white if nothing found
+  }
+
+  function colorValence(color) {
+    const cToRGBA =
+      (typeof window !== 'undefined' && window.deluminateLogic?.colorToRGBA) || colorToRGBA;
+    return colorValenceRaw(...cToRGBA(color));
+  }
+
+  function getBgImageType(tag) {
+    let bgImage;
+    try {
+      bgImage = window.getComputedStyle(tag)['background-image'];
+    } catch {
+      return null;
+    }
+    if (containsAny(bgImage, ['data:image/png', '.png', '.PNG'])) {
+      return 'png';
+    } else if (containsAny(bgImage, ['.gif', '.GIF'])) {
+      return 'gif';
+    } else if (containsAny(bgImage, ['data:image/jpeg', '.jpg', '.JPG', '.jpeg', '.JPEG'])) {
+      return 'jpg';
+    } else if (containsAny(bgImage, ['data:image/svg', '.svg', '.SVG'])) {
+      return 'svg';
+    } else if (containsAny(bgImage, ['data:image/webp', '.webp'])) {
+      return 'webp';
+    } else if (containsAny(bgImage, ['url', 'data:image'])) {
+      return 'unknown';
+    }
     return null;
   }
-  if (containsAny(bgImage, ['data:image/png', '.png', '.PNG'])) {
-    return 'png';
-  } else if (containsAny(bgImage, ['.gif', '.GIF'])) {
-    return 'gif';
-  } else if (containsAny(bgImage,
-      ['data:image/jpeg', '.jpg', '.JPG', '.jpeg', '.JPEG'])) {
-    return 'jpg';
-  } else if (containsAny(bgImage,
-      ['data:image/svg', '.svg', '.SVG'])) {
-    return 'svg';
-  } else if (containsAny(bgImage,
-      ['data:image/webp', '.webp'])) {
-    return 'webp';
-  } else if (containsAny(bgImage, ['url', 'data:image'])) {
-    return 'unknown';
-  }
-  return null;
-}
 
-function markCssImages(tag) {
-  const imageType = getBgImageType(tag);
-  if (imageType) {
-    tag.setAttribute('deluminate_imageType', imageType);
-  } else {
-    tag.removeAttribute('deluminate_imageType');
-  }
-}
-
-function classifyTextColor(rootNode = document) {
-  const paras = new Set(rootNode.querySelectorAll('p:not(footer *)'));
-  // Text with line breaks is *probably* basic writing and not fancy labels.
-  for (const br of rootNode.querySelectorAll('br:not(footer *)')) {
-    paras.add(br.parentElement);
-  }
-  const windowHeight = window.innerHeight;
-  const charTypes = [0, 0, 0];
-  let total = 0;
-  for (const p of paras) {
-    const {color, display, visibility} = safeGetComputedStyle(p);
-    if (!color || display === "none" || visibility !== "visible") continue;
-    const {width = 0, height = 0, top = 0} = p.getBoundingClientRect();
-    if (width * height <= 0 || top > windowHeight) continue;
-    
-    const text = p.textContent;
-    const textValence = colorValence(color);
-    const bgValence = colorValence(getEffectiveBackground(p));
-    
-    // Only count as light text if background is dark/neutral
-    if (textValence === 1 && bgValence <= 0) {
-        charTypes[2] += text.length;
-    } else if (textValence === -1 && bgValence >= 0) {
-        charTypes[0] += text.length;
+  function markCssImages(tag) {
+    const imageType = getBgImageType(tag);
+    if (imageType) {
+      tag.setAttribute('deluminate_imageType', imageType);
     } else {
-        charTypes[1] += text.length;
+      tag.removeAttribute('deluminate_imageType');
     }
-    
-    total += text.length;
-    // Arbitrarily chosen good-enough threshold.
-    if (total > 4096) break;
   }
 
-  // If the previous selectors didn't find much of the page's text, use a
-  // treeWalker.
-  if (total <= 4096) {
-    const walkerRoot = (rootNode.body || rootNode.documentElement || rootNode);
-    const treeWalker = (rootNode.ownerDocument || rootNode).createTreeWalker(
-      walkerRoot,
-      4, /* NodeFilter.SHOW_TEXT */
-    );
-
-    while (treeWalker.nextNode()) {
-      const textNode = treeWalker.currentNode;
-      const elem = textNode.parentElement;
-      const {color, display, visibility} = safeGetComputedStyle(elem);
-      if (!color || display === "none" || visibility !== "visible") continue;
-      const {width = 0, height = 0, top = 0} = elem.getBoundingClientRect();
+  function classifyTextColor(rootNode = document) {
+    const paras = new Set(rootNode.querySelectorAll('p:not(footer *)'));
+    // Text with line breaks is *probably* basic writing and not fancy labels.
+    for (const br of rootNode.querySelectorAll('br:not(footer *)')) {
+      paras.add(br.parentElement);
+    }
+    const windowHeight = window.innerHeight;
+    const charTypes = [0, 0, 0];
+    let total = 0;
+    for (const p of paras) {
+      const { color, display, visibility } = safeGetComputedStyle(p);
+      if (!color || display === 'none' || visibility !== 'visible') continue;
+      const { width = 0, height = 0, top = 0 } = p.getBoundingClientRect();
       if (width * height <= 0 || top > windowHeight) continue;
-      
-      const text = textNode.textContent;
-      const textValence = colorValence(color);
-      const bgValence = colorValence(getEffectiveBackground(elem));
 
+      const text = p.textContent;
+      const textValence = colorValence(color);
+      const bgValence = colorValence(getEffectiveBackground(p));
+
+      // Only count as light text if background is dark/neutral
       if (textValence === 1 && bgValence <= 0) {
-          charTypes[2] += text.length;
+        charTypes[2] += text.length;
       } else if (textValence === -1 && bgValence >= 0) {
-          charTypes[0] += text.length;
+        charTypes[0] += text.length;
       } else {
-          charTypes[1] += text.length;
+        charTypes[1] += text.length;
       }
 
       total += text.length;
       // Arbitrarily chosen good-enough threshold.
       if (total > 4096) break;
     }
-  }
-  // If light text is a supermajority of the text, we'll say this page uses
-  // light text overall.
-  if (charTypes[2] > 0 && charTypes[2] >= charTypes[0]) {
-      return "light";
-  }
-  if (charTypes[0] > 0 && charTypes[0] > charTypes[2]) {
-      return "dark";
-  }
-  return null;
-}
 
-function checksPreferredScheme() {
-  for (const css of document?.styleSheets ?? []) {
-    try {
-      for (const m of css.media ?? []) {
-        if (m.includes("prefers-color-scheme: dark")) {
-          return true;
+    // If the previous selectors didn't find much of the page's text, use a
+    // treeWalker.
+    if (total <= 4096) {
+      const walkerRoot = rootNode.body || rootNode.documentElement || rootNode;
+      const treeWalker = (rootNode.ownerDocument || rootNode).createTreeWalker(
+        walkerRoot,
+        4 /* NodeFilter.SHOW_TEXT */,
+      );
+
+      while (treeWalker.nextNode()) {
+        const textNode = treeWalker.currentNode;
+        const elem = textNode.parentElement;
+        const { color, display, visibility } = safeGetComputedStyle(elem);
+        if (!color || display === 'none' || visibility !== 'visible') continue;
+        const { width = 0, height = 0, top = 0 } = elem.getBoundingClientRect();
+        if (width * height <= 0 || top > windowHeight) continue;
+
+        const text = textNode.textContent;
+        const textValence = colorValence(color);
+        const bgValence = colorValence(getEffectiveBackground(elem));
+
+        if (textValence === 1 && bgValence <= 0) {
+          charTypes[2] += text.length;
+        } else if (textValence === -1 && bgValence >= 0) {
+          charTypes[0] += text.length;
+        } else {
+          charTypes[1] += text.length;
         }
+
+        total += text.length;
+        // Arbitrarily chosen good-enough threshold.
+        if (total > 4096) break;
       }
-      const cssRules = css.rules;
-      for (const rule of cssRules) {
-        for (const m of rule.media ?? []) {
-          if (m.includes("prefers-color-scheme: dark")) {
+    }
+    // If light text is a supermajority of the text, we'll say this page uses
+    // light text overall.
+    if (charTypes[2] > 0 && charTypes[2] >= charTypes[0]) {
+      return 'light';
+    }
+    if (charTypes[0] > 0 && charTypes[0] > charTypes[2]) {
+      return 'dark';
+    }
+    return null;
+  }
+
+  function checksPreferredScheme() {
+    for (const css of document?.styleSheets ?? []) {
+      try {
+        for (const m of css.media ?? []) {
+          if (m.includes('prefers-color-scheme: dark')) {
             return true;
           }
         }
+        const cssRules = css.rules;
+        for (const rule of cssRules) {
+          for (const m of rule.media ?? []) {
+            if (m.includes('prefers-color-scheme: dark')) {
+              return true;
+            }
+          }
+        }
+      } catch {
+        // Exceptions thrown here for CORS security errors..
       }
-    } catch {
-      // Exceptions thrown here for CORS security errors..
     }
+    return false;
   }
-  return false;
-}
 
-if (typeof window !== 'undefined') {
-  window.deluminateLogic = {
-    containsAny,
-    colorToRGBA,
-    colorValenceRaw,
-    colorValence,
-    getBgImageType,
-    markCssImages,
-    classifyTextColor,
-    checksPreferredScheme
-  };
-}
+  if (typeof window !== 'undefined') {
+    window.deluminateLogic = {
+      containsAny,
+      colorToRGBA,
+      colorValenceRaw,
+      colorValence,
+      getBgImageType,
+      markCssImages,
+      classifyTextColor,
+      checksPreferredScheme,
+    };
+  }
 })();

@@ -2,85 +2,85 @@
  * an uninvertable white. The :where pseudo-class has 0 specificity, so these
  * rules will be overwritten by absolutely anything that sets the root
  * background color. */
-:where(:root[hc^="delumine"]:not([hc*="dynamic"][looks-dark]) body) {
+:where(:root[hc^='delumine']:not([hc*='dynamic'][looks-dark]) body) {
   background-color: white;
 }
-:where(:root[hc^="delumine"][hc*="dynamic"][looks-dark] body) {
+:where(:root[hc^='delumine'][hc*='dynamic'][looks-dark] body) {
   background-color: black;
 }
-:where(:root[hc^="noinvert"]:not([hc*="kill_background"]) body) {
+:where(:root[hc^='noinvert']:not([hc*='kill_background']) body) {
   background-color: white;
 }
-:where(:root[hc^="noinvert"][hc*="kill_background"] body) {
+:where(:root[hc^='noinvert'][hc*='kill_background'] body) {
   background-color: black;
 }
 
 /* Invert the luminance iff any of the "delumine" styles are selected. */
-html[hc^="delumine"] {
+html[hc^='delumine'] {
   filter: invert(100%) hue-rotate(180deg);
 }
-html[hc^="delumine"][hc*="dynamic"][looks-dark] {
+html[hc^='delumine'][hc*='dynamic'][looks-dark] {
   filter: none;
 }
-html[hc^="delumine"][hc*="kill_background"]:not([hc*="dynamic"][looks-dark]),
-html[hc^="delumine"][hc*="kill_background"]:not([hc*="dynamic"][looks-dark]) body {
+html[hc^='delumine'][hc*='kill_background']:not([hc*='dynamic'][looks-dark]),
+html[hc^='delumine'][hc*='kill_background']:not([hc*='dynamic'][looks-dark]) body {
   background-image: none !important;
-  background-color: #FFF !important;
+  background-color: #fff !important;
   color: #000 !important;
 }
-html[hc^="delumine"][hc*="kill_background"][hc*="dynamic"][looks-dark],
-html[hc^="delumine"][hc*="kill_background"][hc*="dynamic"][looks-dark] body,
-html[hc^="noinvert"][hc*="kill_background"],
-html[hc^="noinvert"][hc*="kill_background"] body {
+html[hc^='delumine'][hc*='kill_background'][hc*='dynamic'][looks-dark],
+html[hc^='delumine'][hc*='kill_background'][hc*='dynamic'][looks-dark] body,
+html[hc^='noinvert'][hc*='kill_background'],
+html[hc^='noinvert'][hc*='kill_background'] body {
   background-image: none !important;
   background-color: #000 !important;
-  color: #FFF !important;
+  color: #fff !important;
 }
-html[hc*="delumine"] #deluminate_backdrop {
+html[hc*='delumine'] #deluminate_backdrop {
   background: white !important;
 }
 
 /* Override the above with a low-contrast version if selected. */
-html[hc^="delumine"][hc*="low-contrast"] {
+html[hc^='delumine'][hc*='low-contrast'] {
   filter: invert(92%) hue-rotate(180deg);
 }
 
 /* Lower the contrast without inverting the luminance. */
-html[hc^="noinvert-low-contrast"] {
+html[hc^='noinvert-low-contrast'] {
   filter: contrast(85%);
 }
 
 /* Lower the brightness without inverting the luminance. */
-html[hc^="noinvert-dim1"] {
+html[hc^='noinvert-dim1'] {
   filter: brightness(90%);
 }
-html[hc^="noinvert-dim2"] {
+html[hc^='noinvert-dim2'] {
   filter: brightness(80%);
 }
-html[hc^="noinvert-dim3"] {
+html[hc^='noinvert-dim3'] {
   filter: brightness(70%);
 }
-html[hc^="noinvert-dim4"] {
+html[hc^='noinvert-dim4'] {
   filter: brightness(60%);
 }
-html[hc^="noinvert-dim5"] {
+html[hc^='noinvert-dim5'] {
   filter: brightness(50%);
 }
 
 /* The low-contrast version of the above. */
-html[hc^="noinvert-dim1"][hc*="low-contrast"] {
+html[hc^='noinvert-dim1'][hc*='low-contrast'] {
   filter: contrast(85%) brightness(90%);
 }
-html[hc^="noinvert-dim2"][hc*="low-contrast"] {
+html[hc^='noinvert-dim2'][hc*='low-contrast'] {
   filter: contrast(85%) brightness(80%);
 }
-html[hc^="noinvert-dim3"][hc*="low-contrast"] {
+html[hc^='noinvert-dim3'][hc*='low-contrast'] {
   filter: contrast(85%) brightness(70%);
 }
-html[hc^="noinvert-dim4"][hc*="low-contrast"] {
+html[hc^='noinvert-dim4'][hc*='low-contrast'] {
   filter: contrast(85%) brightness(60%);
 }
-html[hc^="noinvert-dim5"][hc*="low-contrast"] {
+html[hc^='noinvert-dim5'][hc*='low-contrast'] {
   filter: contrast(85%) brightness(50%);
 }
 
@@ -97,71 +97,43 @@ embed,
 object) {
   filter: hue-rotate(180deg) invert(100%);
 }
-html[hc*="delumine-noimg"]:not([hc*="dynamic"][looks-dark]) :is(
-	video,
-	iframe[allowfullscreen]) {
+html[hc*='delumine-noimg']:not([hc*='dynamic'][looks-dark]) :is(video, iframe[allowfullscreen]) {
   filter: hue-rotate(180deg) invert(100%);
 }
 /* Avoid performing the uninversion process on anything that is a descendant of
  * something uninverted. */
 /* Image -> Image */
-html[hc*="delumine-noimg"]:not([hc*="dynamic"][looks-dark]) img :is(
-img,
-[style*="url"],
-[deluminate_imageType],
-canvas,
-embed,
-object) {
+html[hc*='delumine-noimg']:not([hc*='dynamic'][looks-dark])
+  img
+  :is(img, [style*='url'], [deluminate_imageType], canvas, embed, object) {
   filter: none;
 }
-html[hc*="delumine-noimg"]:not([hc*="dynamic"][looks-dark]) :is(
-[style*="url"],
-[deluminate_imageType],
-canvas,
-embed,
-object) :is(
-img,
-[style*="url"],
-[deluminate_imageType],
-canvas,
-embed,
-object) {
+html[hc*='delumine-noimg']:not([hc*='dynamic'][looks-dark])
+  :is([style*='url'], [deluminate_imageType], canvas, embed, object)
+  :is(img, [style*='url'], [deluminate_imageType], canvas, embed, object) {
   filter: none;
 }
 /* Image -> Video/Iframe */
-html[hc*="delumine-noimg"]:not([hc*="dynamic"][looks-dark]) img :is(
-	video,
-	iframe[allowfullscreen]) {
+html[hc*='delumine-noimg']:not([hc*='dynamic'][looks-dark])
+  img
+  :is(video, iframe[allowfullscreen]) {
   filter: none;
 }
-html[hc*="delumine-noimg"]:not([hc*="dynamic"][looks-dark]) :is(
-[style*="url"],
-[deluminate_imageType],
-canvas,
-embed,
-object) :is(
-	video,
-	iframe[allowfullscreen]) {
+html[hc*='delumine-noimg']:not([hc*='dynamic'][looks-dark])
+  :is([style*='url'], [deluminate_imageType], canvas, embed, object)
+  :is(video, iframe[allowfullscreen]) {
   filter: none;
 }
 /* Video/Iframe -> Image */
-html[hc*="delumine-noimg"]:not([hc*="dynamic"][looks-dark]) :is(
-	video,
-	iframe[allowfullscreen]) :is(
-img,
-[style*="url"],
-[deluminate_imageType],
-canvas,
-embed,
-object) {
+html[hc*='delumine-noimg']:not([hc*='dynamic'][looks-dark])
+  :is(video, iframe[allowfullscreen])
+  :is(img, [style*='url'], [deluminate_imageType], canvas, embed, object) {
   filter: none;
 }
 /* Video/Iframe -> Video/Iframe */
-html[hc*="delumine-noimg"]:not([hc*="dynamic"][looks-dark]) :is(
-	video,
-	iframe[allowfullscreen]) :is(
-	video,
-	iframe[allowfullscreen]) {
+html[hc*='delumine-noimg']:not([hc*='dynamic'][looks-dark])
+  :is(video, iframe[allowfullscreen])
+  :is(video, iframe[allowfullscreen]) {
   filter: none;
 }
 /* Reinvert iframes inside tags with background-images specified. */
@@ -202,183 +174,190 @@ html[hc*="delumine-smart"]:not([hc*="dynamic"][looks-dark]) body :is(
 	object) {
   filter: hue-rotate(180deg) invert(100%);
 }
-html[hc*="delumine-smart"]:not([hc*="dynamic"][looks-dark]) body :is(
-	video,
-	iframe[allowfullscreen]) {
+html[hc*='delumine-smart']:not([hc*='dynamic'][looks-dark])
+  body
+  :is(video, iframe[allowfullscreen]) {
   filter: hue-rotate(180deg) invert(100%);
 }
 /* Avoid performing the uninversion process on anything that is a descendant of
  * something uninverted. */
 /* Image -> Image */
-html[hc*="delumine-smart"]:not([hc*="dynamic"][looks-dark]) body img :is(
-	img,
-	[itemprop="photo"],
-	[itemprop="image"],
-	[role="img"],
-	[data-src],
-	[data-canonical-src],
-	[src^="data:image/jpeg"],
-	[deluminate_imageType="jpg"],
-	[deluminate_imageType="webp"],
-	[style*=".jpg"],
-	[style*=".JPG"],
-	[style*=".jpeg"],
-	[style*=".JPEG"],
-	[style*=".webp"],
-	[style*=".WEBP"],
-	embed:not([type$="pdf"]),
-	object) {
+html[hc*='delumine-smart']:not([hc*='dynamic'][looks-dark])
+  body
+  img
+  :is(
+    img,
+    [itemprop='photo'],
+    [itemprop='image'],
+    [role='img'],
+    [data-src],
+    [data-canonical-src],
+    [src^='data:image/jpeg'],
+    [deluminate_imageType='jpg'],
+    [deluminate_imageType='webp'],
+    [style*='.jpg'],
+    [style*='.JPG'],
+    [style*='.jpeg'],
+    [style*='.JPEG'],
+    [style*='.webp'],
+    [style*='.WEBP'],
+    embed:not([type$='pdf']),
+    object
+  ) {
   filter: none;
 }
-html[hc*="delumine-smart"]:not([hc*="dynamic"][looks-dark]) body :is(
-	[itemprop="photo"],
-	[itemprop="image"],
-	[role="img"],
-	[data-src],
-	[data-canonical-src],
-	[src^="data:image/jpeg"],
-	[deluminate_imageType="jpg"],
-	[deluminate_imageType="webp"],
-	[style*=".jpg"],
-	[style*=".JPG"],
-	[style*=".jpeg"],
-	[style*=".JPEG"],
-	[style*=".webp"],
-	[style*=".WEBP"],
-	embed:not([type$="pdf"]),
-	object) :is(
-	img,
-	[itemprop="photo"],
-	[itemprop="image"],
-	[role="img"],
-	[data-src],
-	[data-canonical-src],
-	[src^="data:image/jpeg"],
-	[deluminate_imageType="jpg"],
-	[deluminate_imageType="webp"],
-	[style*=".jpg"],
-	[style*=".JPG"],
-	[style*=".jpeg"],
-	[style*=".JPEG"],
-	[style*=".webp"],
-	[style*=".WEBP"],
-	embed:not([type$="pdf"]),
-	object) {
+html[hc*='delumine-smart']:not([hc*='dynamic'][looks-dark])
+  body
+  :is(
+    [itemprop='photo'],
+    [itemprop='image'],
+    [role='img'],
+    [data-src],
+    [data-canonical-src],
+    [src^='data:image/jpeg'],
+    [deluminate_imageType='jpg'],
+    [deluminate_imageType='webp'],
+    [style*='.jpg'],
+    [style*='.JPG'],
+    [style*='.jpeg'],
+    [style*='.JPEG'],
+    [style*='.webp'],
+    [style*='.WEBP'],
+    embed:not([type$='pdf']),
+    object
+  )
+  :is(
+    img,
+    [itemprop='photo'],
+    [itemprop='image'],
+    [role='img'],
+    [data-src],
+    [data-canonical-src],
+    [src^='data:image/jpeg'],
+    [deluminate_imageType='jpg'],
+    [deluminate_imageType='webp'],
+    [style*='.jpg'],
+    [style*='.JPG'],
+    [style*='.jpeg'],
+    [style*='.JPEG'],
+    [style*='.webp'],
+    [style*='.WEBP'],
+    embed:not([type$='pdf']),
+    object
+  ) {
   filter: none;
 }
 /* Image -> Video/Iframe */
-html[hc*="delumine-smart"]:not([hc*="dynamic"][looks-dark]) body img :is(
-	video,
-	iframe[allowfullscreen]) {
+html[hc*='delumine-smart']:not([hc*='dynamic'][looks-dark])
+  body
+  img
+  :is(video, iframe[allowfullscreen]) {
   filter: none;
 }
-html[hc*="delumine-smart"]:not([hc*="dynamic"][looks-dark]) body :is(
-	[itemprop="photo"],
-	[itemprop="image"],
-	[role="img"],
-	[data-src],
-	[data-canonical-src],
-	[src^="data:image/jpeg"],
-	[deluminate_imageType="jpg"],
-	[deluminate_imageType="webp"],
-	[style*=".jpg"],
-	[style*=".JPG"],
-	[style*=".jpeg"],
-	[style*=".JPEG"],
-	[style*=".webp"],
-	[style*=".WEBP"],
-	embed:not([type$="pdf"]),
-	object) :is(
-	video,
-	iframe[allowfullscreen]) {
+html[hc*='delumine-smart']:not([hc*='dynamic'][looks-dark])
+  body
+  :is(
+    [itemprop='photo'],
+    [itemprop='image'],
+    [role='img'],
+    [data-src],
+    [data-canonical-src],
+    [src^='data:image/jpeg'],
+    [deluminate_imageType='jpg'],
+    [deluminate_imageType='webp'],
+    [style*='.jpg'],
+    [style*='.JPG'],
+    [style*='.jpeg'],
+    [style*='.JPEG'],
+    [style*='.webp'],
+    [style*='.WEBP'],
+    embed:not([type$='pdf']),
+    object
+  )
+  :is(video, iframe[allowfullscreen]) {
   filter: none;
 }
 /* Video/Iframe -> Image */
-html[hc*="delumine-smart"]:not([hc*="dynamic"][looks-dark]) body :is(
-	video,
-	iframe[allowfullscreen]) :is(
-	img,
-	[itemprop="photo"],
-	[itemprop="image"],
-	[role="img"],
-	[data-src],
-	[data-canonical-src],
-	[src^="data:image/jpeg"],
-	[deluminate_imageType="jpg"],
-	[deluminate_imageType="webp"],
-	[style*=".jpg"],
-	[style*=".JPG"],
-	[style*=".jpeg"],
-	[style*=".JPEG"],
-	[style*=".webp"],
-	[style*=".WEBP"],
-	embed:not([type$="pdf"]),
-	object) {
+html[hc*='delumine-smart']:not([hc*='dynamic'][looks-dark])
+  body
+  :is(video, iframe[allowfullscreen])
+  :is(
+    img,
+    [itemprop='photo'],
+    [itemprop='image'],
+    [role='img'],
+    [data-src],
+    [data-canonical-src],
+    [src^='data:image/jpeg'],
+    [deluminate_imageType='jpg'],
+    [deluminate_imageType='webp'],
+    [style*='.jpg'],
+    [style*='.JPG'],
+    [style*='.jpeg'],
+    [style*='.JPEG'],
+    [style*='.webp'],
+    [style*='.WEBP'],
+    embed:not([type$='pdf']),
+    object
+  ) {
   filter: none;
 }
 /* Video/Iframe -> Video/Iframe */
-html[hc*="delumine-smart"]:not([hc*="dynamic"][looks-dark]) body :is(
-	video,
-	iframe[allowfullscreen]) :is(
-	video,
-	iframe[allowfullscreen]) {
+html[hc*='delumine-smart']:not([hc*='dynamic'][looks-dark])
+  body
+  :is(video, iframe[allowfullscreen])
+  :is(video, iframe[allowfullscreen]) {
   filter: none;
 }
 /* Reinvert iframes inside tags with background-images specified. */
-html[hc*="delumine-smart"]:not([hc*="dynamic"][looks-dark]) body :is(
-	img,
-	[itemprop="photo"],
-	[itemprop="image"],
-	[role="img"],
-	[data-src],
-	[data-canonical-src],
-	[src^="data:image/jpeg"],
-	[deluminate_imageType="jpg"],
-	[deluminate_imageType="webp"],
-	[style*=".jpg"],
-	[style*=".JPG"],
-	[style*=".jpeg"],
-	[style*=".JPEG"],
-	[style*=".webp"],
-	[style*=".WEBP"],
-	embed,
-	object,
-	video) iframe {
+html[hc*='delumine-smart']:not([hc*='dynamic'][looks-dark])
+  body
+  :is(
+    img,
+    [itemprop='photo'],
+    [itemprop='image'],
+    [role='img'],
+    [data-src],
+    [data-canonical-src],
+    [src^='data:image/jpeg'],
+    [deluminate_imageType='jpg'],
+    [deluminate_imageType='webp'],
+    [style*='.jpg'],
+    [style*='.JPG'],
+    [style*='.jpeg'],
+    [style*='.JPEG'],
+    [style*='.webp'],
+    [style*='.WEBP'],
+    embed,
+    object,
+    video
+  )
+  iframe {
   filter: hue-rotate(180deg) invert(100%);
 }
 
 /* For the -all variant, we still want to uninvert videos and iframes (but not images). */
-html[hc~="delumine-all"]:not([hc*="dynamic"][looks-dark]) :is(
-	embed:not([type$="pdf"]),
-	object,
-	video,
-	iframe[allowfullscreen]) {
+html[hc~='delumine-all']:not([hc*='dynamic'][looks-dark])
+  :is(embed:not([type$='pdf']), object, video, iframe[allowfullscreen]) {
   filter: hue-rotate(180deg) invert(100%);
 }
 /* Cleanup for -all variant */
 /* Anything -> Video/Object/Embed */
-html[hc~="delumine-all"]:not([hc*="dynamic"][looks-dark]) :is(
-	embed,
-	object,
-	video,
-	iframe[allowfullscreen]) :is(
-	embed,
-	object,
-	video) {
+html[hc~='delumine-all']:not([hc*='dynamic'][looks-dark])
+  :is(embed, object, video, iframe[allowfullscreen])
+  :is(embed, object, video) {
   filter: none;
 }
 /* Anything -> Iframe */
-html[hc~="delumine-all"]:not([hc*="dynamic"][looks-dark]) :is(
-	embed,
-	object,
-	video,
-	iframe[allowfullscreen]) iframe[allowfullscreen] {
+html[hc~='delumine-all']:not([hc*='dynamic'][looks-dark])
+  :is(embed, object, video, iframe[allowfullscreen])
+  iframe[allowfullscreen] {
   filter: none;
 }
 
 /* Force text to plain black text on white (which, when inverted, is the
  * preferable white text on black. */
-html[hc*="delumine"][hc*="force_text"] input[type="text"] {
+html[hc*='delumine'][hc*='force_text'] input[type='text'] {
   background-image: none !important;
   background-color: white !important;
   color: black !important;
@@ -386,23 +365,25 @@ html[hc*="delumine"][hc*="force_text"] input[type="text"] {
 
 /* ...unless it's uninverted because of a background image. Then set it
  * directly to white text on black. */
-html[hc*="delumine-smart"][hc*="force_text"] input[type="text"]:is(
-	[src^="data:image/jpeg"],
-	[deluminate_imageType="jpg"],
-	[deluminate_imageType="webp"],
-	[style*=".jpg"],
-	[style*=".JPG"],
-	[style*=".jpeg"],
-	[style*=".JPEG"],
-	[style*=".webp"],
-	[style*=".WEBP"]) {
+html[hc*='delumine-smart'][hc*='force_text']
+  input[type='text']:is(
+    [src^='data:image/jpeg'],
+    [deluminate_imageType='jpg'],
+    [deluminate_imageType='webp'],
+    [style*='.jpg'],
+    [style*='.JPG'],
+    [style*='.jpeg'],
+    [style*='.JPEG'],
+    [style*='.webp'],
+    [style*='.WEBP']
+  ) {
   background-image: none !important;
   background-color: black !important;
   color: white !important;
 }
 
-html[hc*="delumine-noimg"][hc*="force_text"] input[style*="url"]:is(
-  [type="text"], [dir]):not([style*="transparent"]) {
+html[hc*='delumine-noimg'][hc*='force_text']
+  input[style*='url']:is([type='text'], [dir]):not([style*='transparent']) {
   background-image: none !important;
   background-color: black !important;
   color: white !important;
@@ -410,15 +391,15 @@ html[hc*="delumine-noimg"][hc*="force_text"] input[style*="url"]:is(
 
 /* Crude workaround for my inability to inject deluminate into preview iframes
  * on the new tab page. */
-html[hc*="delumine-noimg"] iframe[src^="chrome-search://most-visited"],
-html[hc*="delumine-smart"] iframe[src^="chrome-search://most-visited"] {
+html[hc*='delumine-noimg'] iframe[src^='chrome-search://most-visited'],
+html[hc*='delumine-smart'] iframe[src^='chrome-search://most-visited'] {
   filter: hue-rotate(180deg) invert(100%);
 }
 
 /* Stupid workaround just for Medium's stupid canvas which, as far as I can
  * tell, has no value whatsoever. */
-html[hc*="delumine-noimg"] body canvas.canvas-renderer,
-html[hc*="delumine-smart"] body canvas.canvas-renderer {
+html[hc*='delumine-noimg'] body canvas.canvas-renderer,
+html[hc*='delumine-smart'] body canvas.canvas-renderer {
   filter: none !important;
 }
 

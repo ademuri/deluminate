@@ -10,7 +10,7 @@ test.describe('CSS Performance Benchmark', () => {
     await page.evaluate(() => {
       const container = document.createElement('div');
       container.id = 'perf-container';
-      
+
       // Create 1000 complex items
       // The CSS has rules like: [style*="url"] :is([style*="url"], img, video)
       // So we want nesting.
@@ -21,17 +21,17 @@ test.describe('CSS Performance Benchmark', () => {
 
         const nestedImg = document.createElement('img');
         nestedImg.src = 'pixel.png'; // Matches img
-        
+
         const nestedBg = document.createElement('div');
         nestedBg.style.backgroundImage = 'url("pixel2.png")'; // Nested [style*="url"]
-        
+
         const nestedVideo = document.createElement('video'); // Matches video
-        
+
         // Nest them
         wrapper.appendChild(nestedImg);
         wrapper.appendChild(nestedBg);
         wrapper.appendChild(nestedVideo);
-        
+
         // Nesting level 2
         const deepNested = document.createElement('div');
         deepNested.style.backgroundImage = 'url("pixel3.png")';
@@ -39,7 +39,7 @@ test.describe('CSS Performance Benchmark', () => {
 
         container.appendChild(wrapper);
       }
-      
+
       document.body.appendChild(container);
     });
 
@@ -50,13 +50,13 @@ test.describe('CSS Performance Benchmark', () => {
     // This triggers the browser to match all those new complex CSS rules against the DOM.
     const duration = await page.evaluate(async () => {
       const start = performance.now();
-      
+
       // Apply the attribute that activates the CSS rules
       document.documentElement.setAttribute('hc', 'delumine-smart');
-      
+
       // Force a synchronous style calc / layout
       const height = document.body.offsetHeight;
-      
+
       const end = performance.now();
       return end - start;
     });
@@ -67,6 +67,6 @@ test.describe('CSS Performance Benchmark', () => {
     // Setting a soft assertion here. If the regression is huge, this might be 1000ms+.
     // For now, just logging it is useful, but let's assert it's under a "sanity" threshold
     // so we fail if it's catastrophic.
-    expect(duration).toBeLessThan(2000); 
+    expect(duration).toBeLessThan(2000);
   });
 });

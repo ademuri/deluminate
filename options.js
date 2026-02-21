@@ -19,24 +19,29 @@ function initSettings() {
 
 export async function onImport() {
   const status = $('import_status');
-  status.textContent = "Importing...";
-  status.style.color = "#8BF";
+  status.textContent = 'Importing...';
+  status.style.color = '#8BF';
   try {
     const jsonStr = $('import_data').value;
     if (!jsonStr.trim()) {
-      status.textContent = "Error: No data provided.";
-      status.style.color = "#d54848";
+      status.textContent = 'Error: No data provided.';
+      status.style.color = '#d54848';
       return;
     }
     const data = JSON.parse(jsonStr);
 
     let v2Data;
     if (data.sites && Array.isArray(data.sites)) {
-       v2Data = data;
-    } else if (data.sitemodifiers || data.siteschemes || data.enabled !== undefined || data.localStorage) {
-       v2Data = migrateV1toV2(data.localStorage || data);
+      v2Data = data;
+    } else if (
+      data.sitemodifiers ||
+      data.siteschemes ||
+      data.enabled !== undefined ||
+      data.localStorage
+    ) {
+      v2Data = migrateV1toV2(data.localStorage || data);
     } else {
-       v2Data = migrateV1toV2(data);
+      v2Data = migrateV1toV2(data);
     }
 
     if (v2Data.enabled !== undefined) {
@@ -46,23 +51,22 @@ export async function onImport() {
       await storeSet('sites', v2Data.sites);
     }
     if (v2Data.settings) {
-       await storeSet('settings', v2Data.settings);
+      await storeSet('settings', v2Data.settings);
     }
 
     await syncStore();
 
-    status.textContent = "Import successful! Refreshing...";
-    status.style.color = "#0f0";
+    status.textContent = 'Import successful! Refreshing...';
+    status.style.color = '#0f0';
     setTimeout(async () => {
-        status.textContent = "";
-        const store = await syncStore();
-        initSettings();
-        loadSettingsDisplay(store.export());
+      status.textContent = '';
+      const store = await syncStore();
+      initSettings();
+      loadSettingsDisplay(store.export());
     }, 1000);
-
   } catch (e) {
-    status.textContent = "Error: " + e.message;
-    status.style.color = "#d54848";
+    status.textContent = 'Error: ' + e.message;
+    status.style.color = '#d54848';
     console.error(e);
   }
 }
@@ -74,32 +78,32 @@ export async function onForget() {
 
 export async function onDeleteSelected() {
   const checkboxes = document.querySelectorAll('.site-select:checked');
-  const urls = Array.from(checkboxes).map(cb => cb.dataset.url);
-  
+  const urls = Array.from(checkboxes).map((cb) => cb.dataset.url);
+
   let deletedCount = 0;
   for (const url of urls) {
-      if (!url) continue; // Skip default setting
-      try {
-        await delSiteSettings(url);
-        deletedCount++;
-      } catch (e) {
-        console.error(`Failed to delete settings for ${url}:`, e);
-      }
+    if (!url) continue; // Skip default setting
+    try {
+      await delSiteSettings(url);
+      deletedCount++;
+    } catch (e) {
+      console.error(`Failed to delete settings for ${url}:`, e);
+    }
   }
   if (deletedCount > 0) {
-      loadSettingsDisplay((await syncStore()).export());
+    loadSettingsDisplay((await syncStore()).export());
   }
 }
 
 // Open all links in new tabs.
 function onLinkClick() {
-  const links = document.getElementsByTagName("a");
+  const links = document.getElementsByTagName('a');
   for (let i = 0; i < links.length; i++) {
     (function () {
       const ln = links[i];
       const location = ln.href;
       ln.onclick = function () {
-          chrome.tabs.create({active: true, url: location});
+        chrome.tabs.create({ active: true, url: location });
       };
     })();
   }
@@ -114,10 +118,7 @@ function loadSettingsDisplay(store) {
     const element = document.createElement(tag);
     for (const child of contents) {
       try {
-        element.appendChild(
-          typeof child === "string" ? document.createTextNode(child)
-            : child
-        );
+        element.appendChild(typeof child === 'string' ? document.createTextNode(child) : child);
       } catch {
         console.log(`Bad contents of ${tag}: ${JSON.stringify(contents)}`);
         console.log(`Bad child type: ${JSON.stringify(child)}`);
@@ -126,37 +127,38 @@ function loadSettingsDisplay(store) {
     return element;
   }
   function makeHeader(text, title) {
-    const span = document.createElement("span");
+    const span = document.createElement('span');
     span.textContent = text;
     span.title = title;
-    span.style.textDecoration = "underline";
-    span.style.textDecorationStyle = "dotted";
-    span.style.textAlign = "center";
-    span.style.cursor = "help";
+    span.style.textDecoration = 'underline';
+    span.style.textDecorationStyle = 'dotted';
+    span.style.textAlign = 'center';
+    span.style.cursor = 'help';
     return span;
   }
   function makeModSpan(enabled) {
-    const span = document.createElement("span");
-    span.textContent = enabled ? "✓" : "";
-    span.style.textAlign = "center";
+    const span = document.createElement('span');
+    span.textContent = enabled ? '✓' : '';
+    span.style.textAlign = 'center';
     return span;
   }
   function hasMod(mods, ...variants) {
-    return mods.some(mod => variants.includes(mod));
+    return mods.some((mod) => variants.includes(mod));
   }
   function makeSiteDiv([url, filter, ...mods]) {
-    const checkbox = makeTag("input");
-    checkbox.type = "checkbox";
-    checkbox.className = "site-select";
-    checkbox.dataset.url = url || "";
-    
-    const deleteIcon = makeTag("img");
-    deleteIcon.src = chrome.runtime.getURL("delete.svg");
-    const deleteBtn = url ? makeTag("button", deleteIcon) : makeTag("span", "");
-    const row = makeTag('div',
+    const checkbox = makeTag('input');
+    checkbox.type = 'checkbox';
+    checkbox.className = 'site-select';
+    checkbox.dataset.url = url || '';
+
+    const deleteIcon = makeTag('img');
+    deleteIcon.src = chrome.runtime.getURL('delete.svg');
+    const deleteBtn = url ? makeTag('button', deleteIcon) : makeTag('span', '');
+    const row = makeTag(
+      'div',
       checkbox,
       deleteBtn,
-      makeTag('span', url || "DEFAULT"),
+      makeTag('span', url || 'DEFAULT'),
       makeTag('span', filter),
       makeModSpan(hasMod(mods, 'low_contrast', 'low-contrast')),
       makeModSpan(hasMod(mods, 'force_text', 'force-text', 'forceinput')),
@@ -165,45 +167,46 @@ function loadSettingsDisplay(store) {
       makeModSpan(hasMod(mods, 'ignorebg')),
     );
     if (url) {
-      deleteBtn.className = "delete-button";
+      deleteBtn.className = 'delete-button';
       deleteBtn.onclick = async () => {
         try {
           await delSiteSettings(url);
           loadSettingsDisplay((await syncStore()).export());
         } catch (e) {
           console.error(`Failed to delete settings for ${url}:`, e);
-          alert("Error deleting site: " + e.message);
+          alert('Error deleting site: ' + e.message);
         }
-      }
+      };
     } else {
-        checkbox.disabled = true; // Disable checking default
+      checkbox.disabled = true; // Disable checking default
     }
     return row;
   }
   const settingsDiv = $('settings');
-  settingsDiv.innerHTML = "";
-  
+  settingsDiv.innerHTML = '';
+
   // Select All Checkbox
-  const selectAll = makeTag("input");
-  selectAll.type = "checkbox";
+  const selectAll = makeTag('input');
+  selectAll.type = 'checkbox';
   selectAll.onclick = (e) => {
-      document.querySelectorAll('.site-select').forEach(cb => {
-          if (!cb.disabled) cb.checked = e.target.checked;
-      });
+    document.querySelectorAll('.site-select').forEach((cb) => {
+      if (!cb.disabled) cb.checked = e.target.checked;
+    });
   };
 
-  const heading = makeTag("div",
+  const heading = makeTag(
+    'div',
     selectAll,
-    makeTag("span", ""),
-    makeTag("span", "Website"),
-    makeTag("span", "Filter"),
-    makeHeader("LC", "Low Contrast"),
-    makeHeader("AIT", "Aggressively Invert Text Input"),
-    makeHeader("KB", "Kill Backgrounds"),
-    makeHeader("D", "Avoid Inverting Dark Sites"),
-    makeHeader("BI", "Leave CSS Backgrounds Inverted"),
+    makeTag('span', ''),
+    makeTag('span', 'Website'),
+    makeTag('span', 'Filter'),
+    makeHeader('LC', 'Low Contrast'),
+    makeHeader('AIT', 'Aggressively Invert Text Input'),
+    makeHeader('KB', 'Kill Backgrounds'),
+    makeHeader('D', 'Avoid Inverting Dark Sites'),
+    makeHeader('BI', 'Leave CSS Backgrounds Inverted'),
   );
-  heading.id = "settings-heading";
+  heading.id = 'settings-heading';
   settingsDiv.appendChild(heading);
   for (const site of store) {
     settingsDiv.appendChild(makeSiteDiv(site));

@@ -14,7 +14,7 @@ import {
   isFileUrl,
 } from './common.js';
 
-const nullSelector = {get_site: () => null,}
+const nullSelector = { get_site: () => null };
 let selector;
 let key1;
 let key2;
@@ -25,7 +25,7 @@ function setRadio(name, value) {
   // before looking for the correct radio to enable.
   value = value.replace(/\d+$/, '');
   for (let i = 0; i < radios.length; i++) {
-    radios[i].checked = (radios[i].value.lastIndexOf(value, 0) === 0);
+    radios[i].checked = radios[i].value.lastIndexOf(value, 0) === 0;
     radios[i].disabled = !getEnabled();
   }
 }
@@ -34,12 +34,10 @@ function update() {
   document.body.className = getEnabled() ? '' : 'disabled';
 
   if (getEnabled()) {
-    $('toggle').innerHTML = 'Deluminate is Enabled ' +
-                            '<span class="kb">(' + key1 + ')</span>';
+    $('toggle').innerHTML = 'Deluminate is Enabled ' + '<span class="kb">(' + key1 + ')</span>';
     $('subcontrols').style.display = 'block';
   } else {
-    $('toggle').innerHTML = 'Deluminate is Disabled ' +
-                            '<span class="kb">(' + key1 + ')</span>';
+    $('toggle').innerHTML = 'Deluminate is Disabled ' + '<span class="kb">(' + key1 + ')</span>';
     $('subcontrols').style.display = 'none';
   }
 
@@ -62,7 +60,11 @@ async function wrapAction(action) {
   try {
     await action();
   } catch (err) {
-    alert("Storage error: " + err.message + "\n\nYou may need to clean up unused site settings in the Options page.");
+    alert(
+      'Storage error: ' +
+        err.message +
+        '\n\nYou may need to clean up unused site settings in the Options page.',
+    );
     console.error(err);
   }
 }
@@ -98,7 +100,7 @@ async function onOptionToggle(evt) {
 
 async function onDimLevel(evt) {
   await wrapAction(async () => {
-    const dimLevel = "dim" + evt.target.value;
+    const dimLevel = 'dim' + evt.target.value;
     $('dim_radio').value = dimLevel;
     await setSiteScheme(selector.get_site(), dimLevel);
     update();
@@ -115,31 +117,39 @@ async function onMakeDefault() {
 function addRadioListeners(name) {
   const radios = document.querySelectorAll('input[name="' + name + '"]');
   for (let i = 0; i < radios.length; i++) {
-    radios[i].addEventListener('change', function(evt) {
-      onRadioChange(evt.target.name, evt.target.value);
-    }, false);
-    radios[i].addEventListener('click', function(evt) {
-      onRadioChange(evt.target.name, evt.target.value);
-    }, false);
+    radios[i].addEventListener(
+      'change',
+      function (evt) {
+        onRadioChange(evt.target.name, evt.target.value);
+      },
+      false,
+    );
+    radios[i].addEventListener(
+      'click',
+      function (evt) {
+        onRadioChange(evt.target.name, evt.target.value);
+      },
+      false,
+    );
   }
 }
 
 // Open all links in new tabs.
 function onLinkClick() {
-  const links = document.getElementsByTagName("a");
+  const links = document.getElementsByTagName('a');
   for (let i = 0; i < links.length; i++) {
-      (function () {
-          const ln = links[i];
-          ln.onclick = function (evt) {
-            chrome.tabs.create({active: true, url: evt.target.href});
-            evt.preventDefault();
-          };
-      })();
+    (function () {
+      const ln = links[i];
+      ln.onclick = function (evt) {
+        chrome.tabs.create({ active: true, url: evt.target.href });
+        evt.preventDefault();
+      };
+    })();
   }
 }
 
 function onSettings() {
-  chrome.tabs.create({active: true, url: "options.html"});
+  chrome.tabs.create({ active: true, url: 'options.html' });
 }
 
 export async function init() {
@@ -154,7 +164,7 @@ export async function init() {
   $('settings').addEventListener('click', onSettings, false);
   const settingsIcon = document.createElement('img');
   settingsIcon.src = chrome.runtime.getURL('settings.svg');
-  $('settings').appendChild(settingsIcon)
+  $('settings').appendChild(settingsIcon);
   key1 = 'Shift+F11';
   key2 = 'Shift+F12';
 
@@ -163,15 +173,18 @@ export async function init() {
   const params = new URLSearchParams(window.location.search);
   const testUrl = params.get('tabUrl');
   if (testUrl) {
-    $('scheme_title').innerHTML = 'Color scheme for ' +
-        '<div id="selector"></div>' +
-        '<div class="kb">(Toggle: ' + key2 + ')</div>';
+    $('scheme_title').innerHTML =
+      'Color scheme for ' +
+      '<div id="selector"></div>' +
+      '<div class="kb">(Toggle: ' +
+      key2 +
+      ')</div>';
     selector = new UrlSelector(testUrl);
     selector.render_to($('selector'));
     selector.select_site(getMatchingSite(testUrl));
     $('make_default').style.display = 'block';
   } else {
-    const window = await chrome.windows.getLastFocused({'populate': true});
+    const window = await chrome.windows.getLastFocused({ populate: true });
     for (const tab of window.tabs) {
       if (!tab.active) continue;
       if (isDisallowedUrl(tab.url)) {
@@ -188,11 +201,14 @@ export async function init() {
           $('local-files-error').removeAttribute('hidden');
           $('settings-form').setAttribute('inert', '');
         }
-        selector = {get_site: () => tab.url};
+        selector = { get_site: () => tab.url };
       } else {
-        $('scheme_title').innerHTML = 'Color scheme for ' +
-            '<div id="selector"></div>' +
-            '<div class="kb">(Toggle: ' + key2 + ')</div>';
+        $('scheme_title').innerHTML =
+          'Color scheme for ' +
+          '<div id="selector"></div>' +
+          '<div class="kb">(Toggle: ' +
+          key2 +
+          ')</div>';
         selector = new UrlSelector(tab.url);
         selector.render_to($('selector'));
         selector.select_site(getMatchingSite(tab.url));
@@ -212,17 +228,15 @@ export async function init() {
 }
 
 function onEvent(evt) {
-  if (evt.keyCode == 122 /* F11 */ &&
-      evt.shiftKey) {
-    chrome.runtime.sendMessage({'toggle_global': true});
+  if (evt.keyCode == 122 /* F11 */ && evt.shiftKey) {
+    chrome.runtime.sendMessage({ toggle_global: true });
     evt.stopPropagation();
     evt.preventDefault();
     update();
     return false;
   }
-  if (evt.keyCode == 123 /* F12 */ &&
-      evt.shiftKey) {
-    chrome.runtime.sendMessage({'toggle_site': true});
+  if (evt.keyCode == 123 /* F12 */ && evt.shiftKey) {
+    chrome.runtime.sendMessage({ toggle_site: true });
     evt.stopPropagation();
     evt.preventDefault();
     update();
@@ -232,7 +246,7 @@ function onEvent(evt) {
 }
 
 if (typeof window !== 'undefined') {
-    window.addEventListener('load', init, false);
-    document.addEventListener('DOMContentLoaded', onLinkClick);
-    document.addEventListener('keydown', onEvent, false);
+  window.addEventListener('load', init, false);
+  document.addEventListener('DOMContentLoaded', onLinkClick);
+  document.addEventListener('keydown', onEvent, false);
 }

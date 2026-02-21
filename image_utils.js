@@ -11,8 +11,7 @@ export function isAnimatedGifBuffer(arrayBuffer) {
   const arr = new Uint8Array(arrayBuffer);
 
   // make sure it's a gif (GIF8)
-  if (arr[0] !== 0x47 || arr[1] !== 0x49 ||
-      arr[2] !== 0x46 || arr[3] !== 0x38) {
+  if (arr[0] !== 0x47 || arr[1] !== 0x49 || arr[2] !== 0x46 || arr[3] !== 0x38) {
     return false;
   }
 
@@ -26,12 +25,15 @@ export function isAnimatedGifBuffer(arrayBuffer) {
   // at least 2 frame headers
   let frames = 0;
   const length = arr.length;
-  for (let i=0; i < length - 9; ++i) {
-    if (arr[i] === 0x00 && arr[i+1] === 0x21 &&
-        arr[i+2] === 0xF9 && arr[i+3] === 0x04 &&
-        arr[i+8] === 0x00 &&
-        (arr[i+9] === 0x2C || arr[i+9] === 0x21))
-    {
+  for (let i = 0; i < length - 9; ++i) {
+    if (
+      arr[i] === 0x00 &&
+      arr[i + 1] === 0x21 &&
+      arr[i + 2] === 0xf9 &&
+      arr[i + 3] === 0x04 &&
+      arr[i + 8] === 0x00 &&
+      (arr[i + 9] === 0x2c || arr[i + 9] === 0x21)
+    ) {
       frames++;
     }
     if (frames > 1) {

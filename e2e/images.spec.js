@@ -1,12 +1,15 @@
 import { test, expect } from './fixtures.js';
 
 test.describe('Smart Image Inversion', () => {
-  test('correctly reinverts JPG and WebP images but leaves PNGs inverted', async ({ page, server }) => {
+  test('correctly reinverts JPG and WebP images but leaves PNGs inverted', async ({
+    page,
+    server,
+  }) => {
     // 1. Navigate to the test page
     await page.goto(`${server}/images.html`);
-    
+
     const html = page.locator('html');
-    
+
     // 2. Ensure the extension is active (check for global attribute)
     // Default mode is usually smart invert
     await expect(html).toHaveAttribute('hc', /delumine-smart/);
@@ -18,7 +21,7 @@ test.describe('Smart Image Inversion', () => {
 
     // JPG should be re-inverted (filter applied)
     await expect(jpgImg).toHaveCSS('filter', /invert\((100%|1)\)/);
-    
+
     // WebP should be re-inverted
     await expect(webpImg).toHaveCSS('filter', /invert\((100%|1)\)/);
 

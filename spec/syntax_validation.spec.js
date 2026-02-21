@@ -4,13 +4,10 @@ import path from 'path';
 import vm from 'vm';
 import { expect } from 'expect';
 
-const INJECTED_FILES = [
-  'content_logic.js',
-  'deluminate.js'
-];
+const INJECTED_FILES = ['content_logic.js', 'deluminate.js'];
 
 describe('Syntax Validation for Injected Scripts', () => {
-  INJECTED_FILES.forEach(filename => {
+  INJECTED_FILES.forEach((filename) => {
     it(`${filename} should be a valid script (not a module)`, () => {
       const filePath = path.resolve(filename);
       const code = fs.readFileSync(filePath, 'utf8');
@@ -23,7 +20,7 @@ describe('Syntax Validation for Injected Scripts', () => {
       } catch (err) {
         // Re-throw with a clearer message if it's a syntax error related to modules
         if (err.message.includes('Unexpected token') || err.message.includes('export')) {
-            throw new Error(`Syntax Error in ${filename}: ${err.message}. 
+          throw new Error(`Syntax Error in ${filename}: ${err.message}. 
 Injected scripts must not use ES6 modules (import/export).`);
         }
         throw err;

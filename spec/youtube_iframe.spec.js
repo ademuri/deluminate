@@ -3,7 +3,7 @@ import * as path from 'path';
 import { expect } from 'expect';
 import { JSDOM } from 'jsdom';
 
-describe("YouTube Embed Inversion", () => {
+describe('YouTube Embed Inversion', () => {
   let dom;
   let document;
 
@@ -18,11 +18,17 @@ describe("YouTube Embed Inversion", () => {
         </body>
       </html>`);
     document = dom.window.document;
-    
+
     // Inject CSS
     const style = document.createElement('style');
     style.textContent = cssContent;
-    console.log("CSS Content snippet:", cssContent.substring(cssContent.indexOf('embed:not'), cssContent.indexOf('filter: hue-rotate')));
+    console.log(
+      'CSS Content snippet:',
+      cssContent.substring(
+        cssContent.indexOf('embed:not'),
+        cssContent.indexOf('filter: hue-rotate'),
+      ),
+    );
     document.head.appendChild(style);
   });
 
@@ -36,32 +42,32 @@ describe("YouTube Embed Inversion", () => {
     expect(style.filter).toContain('invert(100%)');
   };
 
-  it("should reinvert video elements in smart mode", () => {
+  it('should reinvert video elements in smart mode', () => {
     setScheme('delumine-smart');
     checkReinvert('html5-video');
   });
 
-  it("should reinvert youtube iframes in smart mode", () => {
+  it('should reinvert youtube iframes in smart mode', () => {
     setScheme('delumine-smart');
     checkReinvert('yt-embed');
   });
 
-  it("should reinvert video elements in noimg mode", () => {
+  it('should reinvert video elements in noimg mode', () => {
     setScheme('delumine-noimg');
     checkReinvert('html5-video');
   });
 
-  it("should reinvert youtube iframes in noimg mode", () => {
+  it('should reinvert youtube iframes in noimg mode', () => {
     setScheme('delumine-noimg');
     checkReinvert('yt-embed');
   });
 
-  it("should reinvert video elements in all mode", () => {
+  it('should reinvert video elements in all mode', () => {
     setScheme('delumine-all');
     checkReinvert('html5-video');
   });
 
-  it("should reinvert youtube iframes in all mode", () => {
+  it('should reinvert youtube iframes in all mode', () => {
     setScheme('delumine-all');
     checkReinvert('yt-embed');
   });

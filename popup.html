@@ -1,214 +1,214 @@
 <!doctype html>
 <html>
-<head>
-<title>Deluminate Pop-up</title>
-<link rel="stylesheet" type="text/css" href="deluminate.css" />
-<link rel="stylesheet" type="text/css" href="url_selector.css" />
-<style type="text/css">
-html {
-  border-radius: 6px;
-  background-color: #111;
-  color: #EEE;
-  color-scheme: only dark;
-  min-width: 500px;
-  max-width: 780px;
-}
-body {
-  margin: 0;
-  border-radius: 6px;
-  font-family: Arial, Helvetica, sans-serif;
-  font-size: 10pt;
-}
-body > * {
-  padding: 10px;
-  border-radius: 6px;
-}
-#title {
-  outline: none;
-}
-.kb {
-  font-weight: normal;
-  font-style: italic;
-  font-size: 10pt;
-  line-height: 18pt;
-}
-button {
-  width: 100%;
-  padding: 0.5em 1.5em;
-  position: relative;
-  overflow: hidden;
-}
-button#toggle {
-  display: flex;
-  margin: auto;
-  font-size: 12pt;
-  line-height: 18pt;
-  text-align: center;
-  background-color: #337;
-  font-weight: bold;
-  width: fit-content;
-  border: none;
-  border-radius: 100px;
-  column-gap: 10px;
-}
-.disabled #toggle {
-  background-color: #222;
-}
-label {
-  white-space: nowrap;
-  display: block;
-}
-form {
-  border: none;
-  margin: 0;
-  margin-bottom: 1em;
-  padding: 0;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-evenly;
-  row-gap: 5px;
-}
-form[inert] {
-  filter: invert(50%);
-}
-fieldset {
-  flex: 1;
-  border: 1px solid #EEE;
-}
-#scheme_title {
-  text-align: center;
-  padding-top: 1em;
-  padding-bottom: 0.5em;
-}
-#local-files-error {
-  text-align: center;
-  padding-bottom: 0.5em;
-}
-#local-files-error[hidden] {
-  display: none;
-}
-#inversion-options {
-  display: grid;
-  column-gap: 10px;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-}
-input[type="radio"], input[type="checkbox"] {
-  margin-left: 0;
-}
-a#issues {
-  font-size: 8pt;
-  text-align: center;
-  display: block;
-  margin-top: 0.5em;
-  margin-bottom: -1.0em;
-}
-input[type='range'] {
-  appearance: none;
-  border-radius: 4pt;
-  box-shadow: inset 0 0 4pt #333;
-  background-color: #666;
-  height: 4pt;
-  vertical-align: middle;
-  margin-bottom: 4pt;
-  /* 1.5em is the total margin of the fieldset. 2px for the borders, and 2.25em
+  <head>
+    <title>Deluminate Pop-up</title>
+    <link rel="stylesheet" type="text/css" href="deluminate.css" />
+    <link rel="stylesheet" type="text/css" href="url_selector.css" />
+    <style type="text/css">
+      html {
+        border-radius: 6px;
+        background-color: #111;
+        color: #eee;
+        color-scheme: only dark;
+        min-width: 500px;
+        max-width: 780px;
+      }
+      body {
+        margin: 0;
+        border-radius: 6px;
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 10pt;
+      }
+      body > * {
+        padding: 10px;
+        border-radius: 6px;
+      }
+      #title {
+        outline: none;
+      }
+      .kb {
+        font-weight: normal;
+        font-style: italic;
+        font-size: 10pt;
+        line-height: 18pt;
+      }
+      button {
+        width: 100%;
+        padding: 0.5em 1.5em;
+        position: relative;
+        overflow: hidden;
+      }
+      button#toggle {
+        display: flex;
+        margin: auto;
+        font-size: 12pt;
+        line-height: 18pt;
+        text-align: center;
+        background-color: #337;
+        font-weight: bold;
+        width: fit-content;
+        border: none;
+        border-radius: 100px;
+        column-gap: 10px;
+      }
+      .disabled #toggle {
+        background-color: #222;
+      }
+      label {
+        white-space: nowrap;
+        display: block;
+      }
+      form {
+        border: none;
+        margin: 0;
+        margin-bottom: 1em;
+        padding: 0;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-evenly;
+        row-gap: 5px;
+      }
+      form[inert] {
+        filter: invert(50%);
+      }
+      fieldset {
+        flex: 1;
+        border: 1px solid #eee;
+      }
+      #scheme_title {
+        text-align: center;
+        padding-top: 1em;
+        padding-bottom: 0.5em;
+      }
+      #local-files-error {
+        text-align: center;
+        padding-bottom: 0.5em;
+      }
+      #local-files-error[hidden] {
+        display: none;
+      }
+      #inversion-options {
+        display: grid;
+        column-gap: 10px;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      }
+      input[type='radio'],
+      input[type='checkbox'] {
+        margin-left: 0;
+      }
+      a#issues {
+        font-size: 8pt;
+        text-align: center;
+        display: block;
+        margin-top: 0.5em;
+        margin-bottom: -1em;
+      }
+      input[type='range'] {
+        appearance: none;
+        border-radius: 4pt;
+        box-shadow: inset 0 0 4pt #333;
+        background-color: #666;
+        height: 4pt;
+        vertical-align: middle;
+        margin-bottom: 4pt;
+        /* 1.5em is the total margin of the fieldset. 2px for the borders, and 2.25em
      is about right for the radio button and Dim text */
-  width: calc(100% - 1.5em - 2px - 2.25em);
-}
-.button-collection {
-  display: flex;
-  column-gap: 10px;
-}
-#settings {
-  margin: 10px;
-  padding: 0;
-  background: none;
-  border: none;
-  cursor: pointer;
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: auto;
-}
-</style>
-<script type="module" src="popup.js"></script>
-</head>
-<body><div>
+        width: calc(100% - 1.5em - 2px - 2.25em);
+      }
+      .button-collection {
+        display: flex;
+        column-gap: 10px;
+      }
+      #settings {
+        margin: 10px;
+        padding: 0;
+        background: none;
+        border: none;
+        cursor: pointer;
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: auto;
+      }
+    </style>
+    <script type="module" src="popup.js"></script>
+  </head>
+  <body>
+    <div>
+      <button id="toggle"></button>
+      <button id="settings"></button>
 
-<button id="toggle"></button>
-<button id="settings"></button>
+      <div id="subcontrols">
+        <div id="scheme_title"></div>
+        <div id="local-files-error" hidden>
+          Cannot access local files unless you enable "Allow access to file URLs" on the
+          <a id="extension-settings" href="#">extension settings page</a>.
+        </div>
+        <form id="settings-form">
+          <fieldset>
+            <legend>Not Inverted</legend>
+            <label>
+              <input type="radio" name="scheme" value="normal" />
+              Normal
+            </label>
+            <label>
+              <input id="dim_radio" type="radio" name="scheme" value="dim1" />
+              Dim
+              <input type="range" id="dim_amount" min="1" max="5" value="1" />
+            </label>
+            <label>
+              <input type="radio" name="scheme" value="low-contrast" />
+              Reduce Contrast Only
+            </label>
+          </fieldset>
+          <fieldset>
+            <legend>Invert Luminance</legend>
+            <label>
+              <input type="radio" name="scheme" value="smart" />
+              Smart Invert Images
+            </label>
+            <label>
+              <input type="radio" name="scheme" value="all" />
+              Invert All Images
+            </label>
+            <label>
+              <input type="radio" name="scheme" value="noimg" />
+              Keep Images Normal
+            </label>
+          </fieldset>
+          <fieldset id="inversion-options">
+            <legend>Inversion Options</legend>
+            <label>
+              <input type="checkbox" id="low_contrast" />
+              Enable Low Contrast
+            </label>
+            <label>
+              <input type="checkbox" id="force_text" />
+              Aggressively Invert Text Input
+            </label>
+            <label>
+              <input type="checkbox" id="kill_background" />
+              Kill Backgrounds
+            </label>
+            <label>
+              <input type="checkbox" id="dynamic" />
+              Avoid Inverting Dark Sites
+            </label>
+            <label>
+              <input type="checkbox" id="ignorebg" />
+              Leave CSS Backgrounds Inverted
+            </label>
+          </fieldset>
+        </form>
 
-<div id="subcontrols">
-  <div id="scheme_title"></div>
-  <div id="local-files-error" hidden>
-    Cannot access local files unless you enable "Allow access to file URLs"
-    on the <a id="extension-settings" href="#">extension settings page</a>.
-  </div>
-  <form id="settings-form">
-    <fieldset>
-      <legend>Not Inverted</legend>
-      <label>
-        <input type="radio" name="scheme" value="normal">
-        Normal
-      </label>
-      <label>
-        <input id="dim_radio" type="radio" name="scheme" value="dim1">
-        Dim
-        <input type="range" id="dim_amount" min="1" max="5" value="1">
-      </label>
-      <label>
-        <input type="radio" name="scheme" value="low-contrast">
-        Reduce Contrast Only
-      </label>
-    </fieldset>
-    <fieldset>
-      <legend>Invert Luminance</legend>
-      <label>
-        <input type="radio" name="scheme" value="smart">
-        Smart Invert Images
-      </label>
-      <label>
-        <input type="radio" name="scheme" value="all">
-        Invert All Images
-      </label>
-      <label>
-        <input type="radio" name="scheme" value="noimg">
-        Keep Images Normal
-      </label>
-    </fieldset>
-    <fieldset id="inversion-options">
-      <legend>Inversion Options</legend>
-      <label>
-        <input type="checkbox" id="low_contrast">
-        Enable Low Contrast
-      </label>
-      <label>
-        <input type="checkbox" id="force_text">
-        Aggressively Invert Text Input
-      </label>
-      <label>
-        <input type="checkbox" id="kill_background">
-        Kill Backgrounds
-      </label>
-      <label>
-        <input type="checkbox" id="dynamic">
-        Avoid Inverting Dark Sites
-      </label>
-      <label>
-        <input type="checkbox" id="ignorebg">
-        Leave CSS Backgrounds Inverted
-      </label>
-    </fieldset>
-  </form>
+        <div class="button-collection">
+          <button id="make_default">Set as default scheme</button>
+        </div>
+      </div>
 
-  <div class="button-collection">
-    <button id="make_default">Set as default scheme</button>
-  </div>
-
-</div>
-
-<a href="https://github.com/ademuri/deluminate/issues/new" id="issues">
-  Something wrong? File a bug!
-</a>
-
-</div></body>
+      <a href="https://github.com/ademuri/deluminate/issues/new" id="issues">
+        Something wrong? File a bug!
+      </a>
+    </div>
+  </body>
 </html>

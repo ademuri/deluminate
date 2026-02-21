@@ -1,116 +1,127 @@
 <!doctype html>
 <html>
-<head>
-<title>Deluminate Options</title>
-<style type="text/css">
-body {
-  max-width: 800px;
-  padding: 0.75em;
-}
-* {
-  font-family: Arial, Helvetica, sans-serif;
-  font-size: 10pt;
-  color: #FFF;
-  background-color: #000;
-}
-a {
-  color: #8BF;
-}
-a:visited {
-  color: #B8F;
-}
-h2 {
-  font-size: 12pt;
-}
-button {
-  margin: 0.75em 0 0.25em 0;
-  padding: 0.5em 1.5em;
-}
-button#toggle {
-  font-size: 12pt;
-}
-button.delete-button {
-  margin: 0;
-  padding: 0;
-  border: none;
-  cursor: pointer;
-  color: #d54848;
-  font-weight: bold;
-}
-#settings {
-  width: 100%;
-  max-height: calc(100vh - 20em);
-  display: grid;
-  column-gap: 1em;
-  grid-template-columns: 2em 2em 3fr 1.5fr repeat(5, 2.5em);
-  overflow: scroll;
-  -webkit-box-sizing: border-box;
-}
-#settings > div {
-  display: contents;
-}
-#settings span {
-  line-height: 24px; /* match height of svg */
-}
-#settings-heading {
-  font-weight: bold;
-}
-#settings-heading > * {
-  position: sticky;
-  top: 0;
-  background-color: #000;
-  z-index: 1;
-  border-bottom: 1px solid #444;
-}
-label {
-  white-space: nowrap;
-  display: block;
-}
-</style>
-<script type="module" src="options.js"></script>
-</head>
-<body style="background-color: #000">
+  <head>
+    <title>Deluminate Options</title>
+    <style type="text/css">
+      body {
+        max-width: 800px;
+        padding: 0.75em;
+      }
+      * {
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 10pt;
+        color: #fff;
+        background-color: #000;
+      }
+      a {
+        color: #8bf;
+      }
+      a:visited {
+        color: #b8f;
+      }
+      h2 {
+        font-size: 12pt;
+      }
+      button {
+        margin: 0.75em 0 0.25em 0;
+        padding: 0.5em 1.5em;
+      }
+      button#toggle {
+        font-size: 12pt;
+      }
+      button.delete-button {
+        margin: 0;
+        padding: 0;
+        border: none;
+        cursor: pointer;
+        color: #d54848;
+        font-weight: bold;
+      }
+      #settings {
+        width: 100%;
+        max-height: calc(100vh - 20em);
+        display: grid;
+        column-gap: 1em;
+        grid-template-columns: 2em 2em 3fr 1.5fr repeat(5, 2.5em);
+        overflow: scroll;
+        -webkit-box-sizing: border-box;
+      }
+      #settings > div {
+        display: contents;
+      }
+      #settings span {
+        line-height: 24px; /* match height of svg */
+      }
+      #settings-heading {
+        font-weight: bold;
+      }
+      #settings-heading > * {
+        position: sticky;
+        top: 0;
+        background-color: #000;
+        z-index: 1;
+        border-bottom: 1px solid #444;
+      }
+      label {
+        white-space: nowrap;
+        display: block;
+      }
+    </style>
+    <script type="module" src="options.js"></script>
+  </head>
+  <body style="background-color: #000">
+    <h2 id="title" tabindex="0">Deluminate Options</h2>
 
-<h2 id="title" tabIndex="0">Deluminate Options</h2>
+    <fieldset>
+      <legend id="global_settings">Global Settings</legend>
+      <label>
+        Experimental detection of animated gifs in "Smart" mode. (WARNING:
+        <em>will</em> slow things down.)
+        <select id="detect_animation">
+          <option value="disabled" selected>Disabled</option>
+          <option value="enabled">Enabled</option>
+        </select>
+      </label>
+    </fieldset>
+    <h3>Saved Site Customizations</h3>
+    <div id="settings"></div>
 
-<fieldset>
-  <legend id="global_settings">Global Settings</legend>
-  <label>
-    Experimental detection of animated gifs in "Smart" mode. (WARNING:
-    <em>will</em> slow things down.)
-    <select id="detect_animation">
-      <option value="disabled" selected>Disabled</option>
-      <option value="enabled">Enabled</option>
-    </select>
-  </label>
-</fieldset>
-<h3>Saved Site Customizations</h3>
-<div id="settings"></div>
+    <button id="delete_selected">Delete Selected</button>
+    <button id="forget">Forget site customizations</button>
 
-<button id="delete_selected">Delete Selected</button>
-<button id="forget">Forget site customizations</button>
+    <details style="margin-top: 1em; border: 1px solid #444; padding: 0.5em">
+      <summary style="cursor: pointer; font-weight: bold">Migrate from Original Deluminate</summary>
+      <p>To import settings from the original extension:</p>
+      <ol>
+        <li>Open the <strong>Options</strong> page of the <em>original</em> Deluminate.</li>
+        <li>Open <strong>Developer Tools</strong> (F12 or Ctrl+Shift+I).</li>
+        <li>Select the <strong>Console</strong> tab.</li>
+        <li>
+          Run this command:
+          <pre style="background: #222; padding: 5px; user-select: all; overflow-x: auto">
+chrome.storage.sync.get(null, d => console.log(JSON.stringify(Object.keys(d).length ? d : localStorage)));</pre
+          >
+        </li>
+        <li>Copy the JSON output and paste it below:</li>
+      </ol>
+      <textarea
+        id="import_data"
+        rows="5"
+        style="
+          width: 100%;
+          box-sizing: border-box;
+          color: #fff;
+          background: #222;
+          border: 1px solid #555;
+        "
+      ></textarea>
+      <button id="import_btn">Import Settings</button>
+      <div id="import_status"></div>
+    </details>
 
-<details style="margin-top: 1em; border: 1px solid #444; padding: 0.5em;">
-  <summary style="cursor: pointer; font-weight: bold;">Migrate from Original Deluminate</summary>
-  <p>To import settings from the original extension:</p>
-  <ol>
-    <li>Open the <strong>Options</strong> page of the <em>original</em> Deluminate.</li>
-    <li>Open <strong>Developer Tools</strong> (F12 or Ctrl+Shift+I).</li>
-    <li>Select the <strong>Console</strong> tab.</li>
-    <li>Run this command:
-      <pre style="background: #222; padding: 5px; user-select: all; overflow-x: auto;">chrome.storage.sync.get(null, d => console.log(JSON.stringify(Object.keys(d).length ? d : localStorage)));</pre>
-    </li>
-    <li>Copy the JSON output and paste it below:</li>
-  </ol>
-  <textarea id="import_data" rows="5" style="width: 100%; box-sizing: border-box; color: #fff; background: #222; border: 1px solid #555;"></textarea>
-  <button id="import_btn">Import Settings</button>
-  <div id="import_status"></div>
-</details>
-
-<hr>
-<a href="https://github.com/ademuri/deluminate/issues/new" id="issues">
-  Something wrong? File a bug!
-</a>
-
-</body>
+    <hr />
+    <a href="https://github.com/ademuri/deluminate/issues/new" id="issues">
+      Something wrong? File a bug!
+    </a>
+  </body>
 </html>

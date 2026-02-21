@@ -7,7 +7,7 @@ import fs from 'fs';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export const test = base.extend({
-  context: async ({ }, use) => {
+  context: async ({}, use) => {
     const pathToExtension = path.resolve(__dirname, '..');
     const context = await chromium.launchPersistentContext('', {
       headless: false,
@@ -19,45 +19,46 @@ export const test = base.extend({
     });
 
     const errors = [];
-    context.on('page', page => {
-      page.on('pageerror', error => {
+    context.on('page', (page) => {
+      page.on('pageerror', (error) => {
         errors.push(`Uncaught exception: ${error.message}`);
       });
-      page.on('console', msg => {
+      page.on('console', (msg) => {
         if (msg.type() === 'error') {
-           // Capture syntax errors and specific extension errors
-           const text = msg.text();
-           if (text.includes('SyntaxError') || 
-               text.includes('ReferenceError') || 
-               text.includes('Deluminate')) {
-             errors.push(`Console error: ${text}`);
-           }
+          // Capture syntax errors and specific extension errors
+          const text = msg.text();
+          if (
+            text.includes('SyntaxError') ||
+            text.includes('ReferenceError') ||
+            text.includes('Deluminate')
+          ) {
+            errors.push(`Console error: ${text}`);
+          }
         }
       });
     });
 
     await use(context);
-    
+
     await context.close();
 
     if (errors.length > 0) {
-       throw new Error(`Test failed with page errors:\n${errors.join('\n')}`);
+      throw new Error(`Test failed with page errors:\n${errors.join('\n')}`);
     }
   },
   extensionId: async ({ context }, use) => {
     let [background] = context.serviceWorkers();
-    if (!background)
-      background = await context.waitForEvent('serviceworker');
+    if (!background) background = await context.waitForEvent('serviceworker');
 
     const extensionId = background.url().split('/')[2];
     await use(extensionId);
   },
-  server: async ({ }, use) => {
+  server: async ({}, use) => {
     const server = http.createServer((req, res) => {
       // Prevent directory traversal
       const safePath = path.normalize(req.url).replace(/^(\.{2}[/\\])+/, '');
       const filePath = path.join(__dirname, 'fixtures', safePath === '/' ? 'index.html' : safePath);
-      
+
       fs.readFile(filePath, (err, data) => {
         if (err) {
           res.writeHead(404);
@@ -65,19 +66,20 @@ export const test = base.extend({
           return;
         }
         const ext = path.extname(filePath);
-        const mime = {
-           '.html': 'text/html',
-           '.css': 'text/css',
-           '.js': 'text/javascript',
-           '.png': 'image/png',
-           '.jpg': 'image/jpeg'
-        }[ext] || 'text/plain';
+        const mime =
+          {
+            '.html': 'text/html',
+            '.css': 'text/css',
+            '.js': 'text/javascript',
+            '.png': 'image/png',
+            '.jpg': 'image/jpeg',
+          }[ext] || 'text/plain';
         res.writeHead(200, { 'Content-Type': mime });
         res.end(data);
       });
     });
-    
-    await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
+
+    await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
     const port = server.address().port;
     await use(`http://127.0.0.1:${port}`);
     server.close();

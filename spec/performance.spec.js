@@ -11,54 +11,56 @@ const deluminatePath = path.resolve('deluminate.js');
 const deluminateCode = fs.readFileSync(deluminatePath, 'utf8');
 
 describe('Performance & Resource Usage', () => {
-
   describe('Memory Leaks', () => {
     let dom;
     let window;
     let colorToRGBA;
 
     beforeEach(() => {
-        dom = new JSDOM('<!DOCTYPE html>', { runScripts: "dangerously" });
-        window = dom.window;
-        
-        // Mock canvas context required by colorToRGBA
-        window.HTMLCanvasElement.prototype.getContext = function() {
-            return {
-                clearRect: () => {},
-                fillRect: () => {},
-                getImageData: () => ({ data: [0,0,0,0] })
-            };
-        };
+      dom = new JSDOM('<!DOCTYPE html>', { runScripts: 'dangerously' });
+      window = dom.window;
 
-        const script = window.document.createElement('script');
-        script.textContent = contentLogicCode;
-        window.document.body.appendChild(script);
-        
-        if (window.deluminateLogic && window.deluminateLogic.colorToRGBA) {
-            colorToRGBA = window.deluminateLogic.colorToRGBA;
-        } else {
-            throw new Error("Failed to load colorToRGBA from content_logic.js in JSDOM");
-        }
+      // Mock canvas context required by colorToRGBA
+      window.HTMLCanvasElement.prototype.getContext = function () {
+        return {
+          clearRect: () => {},
+          fillRect: () => {},
+          getImageData: () => ({ data: [0, 0, 0, 0] }),
+        };
+      };
+
+      const script = window.document.createElement('script');
+      script.textContent = contentLogicCode;
+      window.document.body.appendChild(script);
+
+      if (window.deluminateLogic && window.deluminateLogic.colorToRGBA) {
+        colorToRGBA = window.deluminateLogic.colorToRGBA;
+      } else {
+        throw new Error('Failed to load colorToRGBA from content_logic.js in JSDOM');
+      }
     });
 
     it('colorToRGBA cache should not grow unbounded', () => {
       // Ensure we have the function and cache
-      assert.ok(colorToRGBA, "colorToRGBA should be defined");
-      assert.ok(colorToRGBA._cache, "colorToRGBA should have a _cache property");
+      assert.ok(colorToRGBA, 'colorToRGBA should be defined');
+      assert.ok(colorToRGBA._cache, 'colorToRGBA should have a _cache property');
 
       const initialSize = Object.keys(colorToRGBA._cache).length;
-      
+
       // Simulate processing many distinct colors
       for (let i = 0; i < 10000; i++) {
         colorToRGBA(`rgb(${i % 255}, ${Math.floor(i / 255) % 255}, 0)`);
       }
 
       const finalSize = Object.keys(colorToRGBA._cache).length;
-      // Ideally, a cache should have a limit. 10,000 unique keys is a lot for a color cache 
+      // Ideally, a cache should have a limit. 10,000 unique keys is a lot for a color cache
       // if the page has dynamic content.
       // Let's assert that it has a reasonable limit, say 1000 (arbitrary but safe).
       // If it fails, we know it's unbounded.
-      assert.ok(finalSize < 2000, `Cache size ${finalSize} is too large, indicating a memory leak.`);
+      assert.ok(
+        finalSize < 2000,
+        `Cache size ${finalSize} is too large, indicating a memory leak.`,
+      );
     });
   });
 
@@ -66,49 +68,49 @@ describe('Performance & Resource Usage', () => {
     let dom;
     let window;
     let document;
-    
+
     beforeEach(() => {
       dom = new JSDOM('<!DOCTYPE html><html><head></head><body></body></html>', {
         url: 'https://example.com/',
         runScripts: 'dangerously',
-        resources: 'usable'
+        resources: 'usable',
       });
       window = dom.window;
       document = window.document;
-      
+
       // Mock chrome API
       window.chrome = {
         runtime: {
           id: 'fake-id',
           onMessage: { addListener: () => {} },
           sendMessage: (msg, opts, cb) => {
-             // Respond as if Smart Inversion is enabled
-             const response = { 
-               enabled: true, 
-               scheme: 'delumine-smart', // Triggers image processing
-               modifiers: [], 
-               settings: {} 
-             };
-             if (cb) setTimeout(() => cb(response), 0);
-             else if (opts) setTimeout(() => opts(response), 0);
+            // Respond as if Smart Inversion is enabled
+            const response = {
+              enabled: true,
+              scheme: 'delumine-smart', // Triggers image processing
+              modifiers: [],
+              settings: {},
+            };
+            if (cb) setTimeout(() => cb(response), 0);
+            else if (opts) setTimeout(() => opts(response), 0);
           },
           getURL: (path) => 'chrome-extension://fake-id/' + path,
-          lastError: null
-        }
+          lastError: null,
+        },
       };
-      
+
       // Mock window.deluminateLogic needed by deluminate.js
       window.deluminateLogic = {
-         getBgImageType: (tag) => {
-            // Real implementation calls getComputedStyle
-            return window.getComputedStyle(tag)['background-image'] ? 'unknown' : null;
-         },
-         markCssImages: (tag) => {
-            // Real implementation calls getComputedStyle
-            window.getComputedStyle(tag)['background-image'];
-         },
-         classifyTextColor: () => {},
-         checksPreferredScheme: () => {}
+        getBgImageType: (tag) => {
+          // Real implementation calls getComputedStyle
+          return window.getComputedStyle(tag)['background-image'] ? 'unknown' : null;
+        },
+        markCssImages: (tag) => {
+          // Real implementation calls getComputedStyle
+          window.getComputedStyle(tag)['background-image'];
+        },
+        classifyTextColor: () => {},
+        checksPreferredScheme: () => {},
       };
     });
 
@@ -136,38 +138,38 @@ describe('Performance & Resource Usage', () => {
 
         // Simulate adding a feed of items (e.g., 100 items)
         const container = document.createElement('div');
-        for(let i=0; i<100; i++) {
+        for (let i = 0; i < 100; i++) {
           const item = document.createElement('div');
           item.className = 'feed-item';
           item.innerHTML = '<span>Text</span><img src="icon.png">';
           container.appendChild(item);
         }
-        
+
         // Append to body - this triggers MutationObserver
         document.body.appendChild(container);
 
         // Wait for MutationObserver (microtask/next loop)
         setTimeout(() => {
-           // With 100 items + children, how many times is getComputedStyle called?
-           // The observer queries *:not([style*="url"]).
-           // Structure: div(container) -> 100 * [div(item) -> span, img]
-           // MutationObserver sees the container.
-           // inner loop: queries container.querySelectorAll(...)
-           // For each item (3 nodes per item: div, span, img), it calls markCssImages.
-           // Expected: ~300 calls.
-           
-           // console.log(`getComputedStyle called ${styleCallCount} times for 100 items.`);
-           
-           // If we are strictly checking for performance, we might want to ensure we aren't 
-           // calling it more than necessary.
-           // For now, this test is informational, but we can assert a baseline.
-           // If it was 0, the feature isn't working. If it's huge, it's thrashing.
-           assert.ok(styleCallCount > 0, "Should attempt to style images");
-           
-           // If we were batching or optimizing, we might expect fewer.
-           // But currently we expect O(N) where N is total nodes.
-           
-           done();
+          // With 100 items + children, how many times is getComputedStyle called?
+          // The observer queries *:not([style*="url"]).
+          // Structure: div(container) -> 100 * [div(item) -> span, img]
+          // MutationObserver sees the container.
+          // inner loop: queries container.querySelectorAll(...)
+          // For each item (3 nodes per item: div, span, img), it calls markCssImages.
+          // Expected: ~300 calls.
+
+          // console.log(`getComputedStyle called ${styleCallCount} times for 100 items.`);
+
+          // If we are strictly checking for performance, we might want to ensure we aren't
+          // calling it more than necessary.
+          // For now, this test is informational, but we can assert a baseline.
+          // If it was 0, the feature isn't working. If it's huge, it's thrashing.
+          assert.ok(styleCallCount > 0, 'Should attempt to style images');
+
+          // If we were batching or optimizing, we might expect fewer.
+          // But currently we expect O(N) where N is total nodes.
+
+          done();
         }, 50);
       }, 50);
     });

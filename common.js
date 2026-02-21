@@ -1,17 +1,16 @@
-import {Settings, SiteSettings} from "./utils.js";
+import { Settings, SiteSettings } from './utils.js';
 
-export const api = typeof chrome !== "undefined" ? chrome
-  : typeof browser !== "undefined" ? browser
-  : {};
+export const api =
+  typeof chrome !== 'undefined' ? chrome : typeof browser !== 'undefined' ? browser : {};
 
-export const DEFAULT_SCHEME = "delumine-smart";
-const DEFAULT_FILTER = DEFAULT_SCHEME.split("-").slice(1).join("-");
+export const DEFAULT_SCHEME = 'delumine-smart';
+const DEFAULT_FILTER = DEFAULT_SCHEME.split('-').slice(1).join('-');
 const storeCache = {};
 let settings = new Settings(DEFAULT_FILTER);
 
 let migrationTask;
 async function migrateFromLocalStorage() {
-  const {migrationComplete} = await api.storage.local.get(['migrationComplete']);
+  const { migrationComplete } = await api.storage.local.get(['migrationComplete']);
   if (migrationComplete >= 2) {
     return;
   }
@@ -27,24 +26,28 @@ async function migrateFromLocalStorage() {
           reasons: ['LOCAL_STORAGE'],
           justification: 'migrating local storage to cloud sync storage',
         }),
-        new Promise((_, reject) => setTimeout(() => reject(new Error("Offscreen creation timed out")), 4000))
+        new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('Offscreen creation timed out')), 4000),
+        ),
       ]);
     } catch {
       // Already created or timed out. That's fine, just send the message.
     }
-    const [remoteResult, migrationResult] = await Promise
-      .allSettled([
-        Promise.race([
-          api.storage.sync.get(),
-          new Promise((_, reject) => setTimeout(() => reject(new Error("Sync get timed out")), 2000))
-        ]),
-        Promise.race([
-          chrome.runtime.sendMessage({target: 'offscreen', action: 'migrate'}),
-          new Promise((_, reject) => setTimeout(() => reject(new Error("Migration message timed out")), 1000))
-        ]),
+    const [remoteResult, migrationResult] = await Promise.allSettled([
+      Promise.race([
+        api.storage.sync.get(),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Sync get timed out')), 2000)),
+      ]),
+      Promise.race([
+        chrome.runtime.sendMessage({ target: 'offscreen', action: 'migrate' }),
+        new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('Migration message timed out')), 1000),
+        ),
+      ]),
     ]);
     const remoteSettings = remoteResult.status === 'fulfilled' ? remoteResult.value : null;
-    const localStorage = migrationResult.status === 'fulfilled' ? migrationResult.value?.localStorage : null;
+    const localStorage =
+      migrationResult.status === 'fulfilled' ? migrationResult.value?.localStorage : null;
     if (remoteSettings) {
       try {
         Object.assign(storeCache, remoteSettings);
@@ -54,19 +57,18 @@ async function migrateFromLocalStorage() {
       }
     }
     if (localStorage) {
-      const {sites, ...otherSettings} = migrateV1toV2(localStorage);
+      const { sites, ...otherSettings } = migrateV1toV2(localStorage);
       // Allow local settings to override remote settings.
       Object.assign(storeCache, otherSettings);
       // Merge local site settings with any existing ones.
       settings.import(sites);
       storeCache.sites = settings.export();
       // Publish the merged site settings.
-      await storeSet("sites", storeCache.sites);
+      await storeSet('sites', storeCache.sites);
       try {
-            api.storage.local.set({migrationComplete: 2});
-      }
-      catch (error) {
-            console.warn(error);
+        api.storage.local.set({ migrationComplete: 2 });
+      } catch (error) {
+        console.warn(error);
       }
     }
   })();
@@ -79,15 +81,19 @@ function parseSiteMods(sitemods) {
   // different ways: either a whitespace-delimited string or an object with
   // key: true pairs.
   try {
-    return sitemods.split(" ");
-  } catch { /* Not a string. */ }
+    return sitemods.split(' ');
+  } catch {
+    /* Not a string. */
+  }
   try {
     return Object.keys(sitemods);
-  } catch { /* Not an object. */ }
+  } catch {
+    /* Not an object. */
+  }
   return [];
 }
 
-const toBool = (str) => str !== "false" && Boolean(str);
+const toBool = (str) => str !== 'false' && Boolean(str);
 
 function safeJsonParse(str, fallback) {
   try {
@@ -98,43 +104,42 @@ function safeJsonParse(str, fallback) {
 }
 
 export function migrateV1toV2(v1) {
-  const v2 = {version: 2, enabled: toBool(v1?.enabled ?? true)};
-  const defaultFilter = (v1?.scheme ?? DEFAULT_SCHEME)
-    .split("-").slice(1).join("-") || "normal"
-    ;
+  const v2 = { version: 2, enabled: toBool(v1?.enabled ?? true) };
+  const defaultFilter = (v1?.scheme ?? DEFAULT_SCHEME).split('-').slice(1).join('-') || 'normal';
   const schemeToFilter = (scheme) => {
-    const filter = (scheme ?? `filter-${defaultFilter}`)
-      .split("-").slice(1).join("-") || "normal";
-    return filter === "no-invert" ? "normal" : filter;
+    const filter = (scheme ?? `filter-${defaultFilter}`).split('-').slice(1).join('-') || 'normal';
+    return filter === 'no-invert' ? 'normal' : filter;
   };
   const defaultMods = [];
   if (toBool(v1?.low_contrast)) {
-    defaultMods.push("low_contrast");
+    defaultMods.push('low_contrast');
   }
   if (toBool(v1?.kill_background)) {
-    defaultMods.push("kill_background");
+    defaultMods.push('kill_background');
   }
   if (toBool(v1?.force_text)) {
-    defaultMods.push("force_text");
+    defaultMods.push('force_text');
   }
-  defaultMods.push("dynamic");
+  defaultMods.push('dynamic');
   const settings = new Settings(defaultFilter, defaultMods);
 
-  const siteModifiers = safeJsonParse(v1?.sitemodifiers ?? "{}", {});
-  const siteSchemes = safeJsonParse(v1?.siteschemes ?? "{}", {});
-  const domains = new Set([
-    ...Object.keys(siteModifiers),
-    ...Object.keys(siteSchemes),
-  ]);
+  const siteModifiers = safeJsonParse(v1?.sitemodifiers ?? '{}', {});
+  const siteSchemes = safeJsonParse(v1?.siteschemes ?? '{}', {});
+  const domains = new Set([...Object.keys(siteModifiers), ...Object.keys(siteSchemes)]);
   for (const domain of domains) {
     const siteSettings = new SiteSettings(
       schemeToFilter(siteSchemes[domain]),
-      parseSiteMods(siteModifiers[domain]).map(mod => ({
-        "low-contrast": "low_contrast",
-        "low_contrast": "low_contrast",
-        "kill_background": "kill_background",
-        "force_text": "force_text",
-      })[mod]).filter(Boolean),
+      parseSiteMods(siteModifiers[domain])
+        .map(
+          (mod) =>
+            ({
+              'low-contrast': 'low_contrast',
+              low_contrast: 'low_contrast',
+              kill_background: 'kill_background',
+              force_text: 'force_text',
+            })[mod],
+        )
+        .filter(Boolean),
     );
     settings.save(domain, siteSettings);
   }
@@ -173,42 +178,42 @@ export async function refreshStore() {
   try {
     items = await Promise.race([
       api.storage.sync.get(),
-      new Promise((_, reject) => setTimeout(() => reject(new Error("Sync get timed out")), 2000))
+      new Promise((_, reject) => setTimeout(() => reject(new Error('Sync get timed out')), 2000)),
     ]);
   } catch (e) {
-    console.warn("Failed to refresh store from sync (using defaults/backup):", e);
+    console.warn('Failed to refresh store from sync (using defaults/backup):', e);
     try {
-        const local = await api.storage.local.get("backup_sites");
-        if (local.backup_sites) {
-            console.log("Loaded sites from local backup.");
-            items.sites = local.backup_sites;
-        }
+      const local = await api.storage.local.get('backup_sites');
+      if (local.backup_sites) {
+        console.log('Loaded sites from local backup.');
+        items.sites = local.backup_sites;
+      }
     } catch (localErr) {
-        console.warn("Failed to load local backup:", localErr);
+      console.warn('Failed to load local backup:', localErr);
     }
   }
-  
+
   Object.assign(storeCache, items);
   storeCache.sites = mergeSites(items);
   settings = Settings.import(storeCache?.sites, DEFAULT_FILTER);
-  
+
   try {
     const localSites = await Promise.race([
-        api.storage.local.get("sites"),
-        new Promise((_, reject) => setTimeout(() => reject(new Error("Local get timed out")), 1000))
+      api.storage.local.get('sites'),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('Local get timed out')), 1000)),
     ]);
-    settings.import(localSites["sites"] ?? []);
+    settings.import(localSites['sites'] ?? []);
   } catch (e) {
-     console.warn("Failed to load local sites:", e);
+    console.warn('Failed to load local sites:', e);
   }
-  
+
   return settings;
 }
 
 export async function storeSet(key, value) {
   storeCache[key] = value;
-  
-  if (key === "sites") {
+
+  if (key === 'sites') {
     const chunks = splitSites(value);
     const updates = {};
     updates.sites = chunks[0] || [];
@@ -216,28 +221,28 @@ export async function storeSet(key, value) {
       updates[`sites_${i}`] = chunks[i];
       storeCache[`sites_${i}`] = chunks[i];
     }
-    
+
     // Cleanup old keys
     try {
       const allKeys = Object.keys(await api.storage.sync.get());
-      const keysToRemove = allKeys.filter(k => {
-          if (!k.startsWith("sites_")) return false;
-          const index = parseInt(k.split("_")[1]);
-          return !isNaN(index) && index >= chunks.length;
+      const keysToRemove = allKeys.filter((k) => {
+        if (!k.startsWith('sites_')) return false;
+        const index = parseInt(k.split('_')[1]);
+        return !isNaN(index) && index >= chunks.length;
       });
-      
+
       if (keysToRemove.length > 0) {
-          keysToRemove.forEach(k => delete storeCache[k]);
-          await api.storage.sync.remove(keysToRemove);
+        keysToRemove.forEach((k) => delete storeCache[k]);
+        await api.storage.sync.remove(keysToRemove);
       }
     } catch (e) {
-      console.warn("Failed to cleanup old site keys", e);
+      console.warn('Failed to cleanup old site keys', e);
     }
-    
+
     return api.storage.sync.set(updates);
   }
 
-  return api.storage.sync.set({[key]: value});
+  return api.storage.sync.set({ [key]: value });
 }
 
 export function $(id) {
@@ -265,14 +270,13 @@ export function setSiteSettings(site, siteSettings) {
   storeCache.sites = settings.export();
   try {
     api.storage.local.set({
-        sites: settings.exportLocal(),
-        backup_sites: storeCache.sites
+      sites: settings.exportLocal(),
+      backup_sites: storeCache.sites,
     });
+  } catch (error) {
+    console.warn(error);
   }
-  catch(error) {
-    console.warn(error)
-  }
-  return storeSet("sites", storeCache.sites);
+  return storeSet('sites', storeCache.sites);
 }
 
 export function delSiteSettings(site) {
@@ -280,20 +284,17 @@ export function delSiteSettings(site) {
   storeCache.sites = settings.export();
   try {
     api.storage.local.set({
-        sites: settings.exportLocal(),
-        backup_sites: storeCache.sites
+      sites: settings.exportLocal(),
+      backup_sites: storeCache.sites,
     });
+  } catch (error) {
+    console.warn(error);
   }
-  catch(error) {
-    console.warn(error)
-  }
-  return storeSet("sites", storeCache.sites);
+  return storeSet('sites', storeCache.sites);
 }
 
 export async function resetSiteSchemes() {
-  await api.storage.sync.remove(
-    Object.keys(await api.storage.sync.get())
-  );
+  await api.storage.sync.remove(Object.keys(await api.storage.sync.get()));
   for (const key of Object.keys(storeCache)) {
     delete storeCache[key];
   }
@@ -325,7 +326,7 @@ export function setSiteScheme(site, scheme) {
 
 export function setDefaultModifiers(modifiers) {
   const defaultSettings = settings.site_default();
-  return setSiteSettings("", new SiteSettings(defaultSettings.filter, modifiers));
+  return setSiteSettings('', new SiteSettings(defaultSettings.filter, modifiers));
 }
 
 export function addSiteModifier(site, modifier) {
@@ -349,11 +350,11 @@ export function changedFromDefault(site) {
 }
 
 export function isFileUrl(url) {
-	try {
-		return (new URL(url)).origin === "file://";
-	} catch {
-		return false;
-	}
+  try {
+    return new URL(url).origin === 'file://';
+  } catch {
+    return false;
+  }
 }
 
 export function isDisallowedUrl(url) {
@@ -361,10 +362,8 @@ export function isDisallowedUrl(url) {
     return true;
   } else if (url.indexOf('chrome') == 0) {
     // Special case the "newtab" page, which this extension affects.
-    if (siteFromUrl(url) == 'newtab')
-      return false;
-    else
-      return true;
+    if (siteFromUrl(url) == 'newtab') return false;
+    else return true;
   }
   return false;
 }
