@@ -35,7 +35,7 @@ Chrome extension to invert website luminance. Features: full inversion, smart im
 **Scripts (defined in `package.json`):**
 
 - `npm test`: Run unit tests.
-- `npm run test:e2e`: Run E2E tests.
+- `npm run test:e2e`: Run E2E tests, but they don't currently work in the Gemini CLI sandbox. Don't run these tests, just tell me when it's time to run them.
 - `npm run lint`: Check code style.
 - `npm run package`: Build `deluminate.zip` for distribution.
 
