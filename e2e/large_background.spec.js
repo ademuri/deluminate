@@ -60,3 +60,27 @@ test('Avoid re-inverting large background elements', async ({ page, server }) =>
   // Small content element SHOULD have a re-inversion filter to look natural.
   expect(profileComputedFilter).toContain('invert(1)');
 });
+
+test('White text on re-inverted background (white-on-white)', async ({ page, server }) => {
+  // Use a fixture file instead of setContent for more reliable extension injection
+  await page.goto(`${server}/white_on_white.html`);
+
+  // Wait for injection
+  await expect(page.locator('html')).toHaveAttribute('hc', /delumine-smart/);
+  
+  const bgLayer = page.locator('.bg-layer');
+  const content = page.locator('.content');
+
+  // Verify that bg-layer is NOT re-inverted even though it has role="img"
+  await expect(bgLayer).toHaveAttribute('deluminate_re_invert', 'false', { timeout: 10000 });
+
+  const bgComputedFilter = await bgLayer.evaluate(el => window.getComputedStyle(el).filter);
+  const contentColor = await content.evaluate(el => window.getComputedStyle(el).color);
+
+  // BG Layer should stay inverted (black)
+  expect(bgComputedFilter).not.toContain('invert(1)');
+  // Content color should be black (which will look white visually due to HTML inversion)
+  expect(contentColor).toBe('rgb(0, 0, 0)');
+  
+  // Visually: White text on Black background. Success.
+});

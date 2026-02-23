@@ -192,8 +192,17 @@ describe('Content Logic', () => {
     expect(div.hasAttribute('deluminate_imageType')).toBe(false);
     expect(div.getAttribute('deluminate_re_invert')).toBe('false');
 
+    // Element with role="img" but NO background-image
+    const roleDiv = document.createElement('div');
+    roleDiv.setAttribute('role', 'img');
+    roleDiv.getBoundingClientRect = () => ({ width: 900, height: 900 });
+    dom.window.getComputedStyle = () => ({ 'background-image': 'none' });
+    logic.markCssImages(roleDiv);
+    expect(roleDiv.getAttribute('deluminate_re_invert')).toBe('false');
+
     // Make small again - should clear re_invert
     div.getBoundingClientRect = () => ({ width: 100, height: 100 });
+    dom.window.getComputedStyle = () => ({ 'background-image': 'url("image.jpg")' });
     logic.markCssImages(div);
     expect(div.getAttribute('deluminate_imageType')).toBe('jpg');
     expect(div.hasAttribute('deluminate_re_invert')).toBe(false);

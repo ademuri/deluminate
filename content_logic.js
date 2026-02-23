@@ -124,15 +124,32 @@
 
   function markCssImages(tag) {
     let imageType = getBgImageType(tag);
-    if (imageType && tag.tagName !== 'IMG' && tag.tagName !== 'VIDEO') {
+
+    const isPotentiallyReInverted =
+      imageType ||
+      tag.getAttribute('role') === 'img' ||
+      tag.hasAttribute('itemprop') ||
+      tag.hasAttribute('data-src') ||
+      tag.hasAttribute('data-canonical-src') ||
+      tag.tagName === 'CANVAS' ||
+      tag.tagName === 'OBJECT' ||
+      tag.tagName === 'EMBED';
+
+    if (isPotentiallyReInverted && tag.tagName !== 'IMG' && tag.tagName !== 'VIDEO') {
       const { width, height } = tag.getBoundingClientRect();
-      if (width > window.innerWidth * 0.5 && height > window.innerHeight * 0.5) {
+      const vWidth = window.innerWidth;
+      const vHeight = window.innerHeight;
+
+      if ((width >= vWidth * 0.45 && height >= 100) || (height >= vHeight * 0.45 && width >= 100)) {
         tag.setAttribute('deluminate_re_invert', 'false');
         imageType = null;
       } else {
         tag.removeAttribute('deluminate_re_invert');
       }
+    } else {
+      tag.removeAttribute('deluminate_re_invert');
     }
+
     if (imageType) {
       tag.setAttribute('deluminate_imageType', imageType);
     } else {

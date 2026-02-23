@@ -218,22 +218,42 @@
   let deepImageProcessingComplete = false;
   function processElements(elements) {
     if (!getBgImageType) return;
-    const types = Array.prototype.map.call(elements, getBgImageType);
     const vWidth = window.innerWidth;
     const vHeight = window.innerHeight;
 
     for (let i = 0; i < elements.length; i++) {
       const tag = elements[i];
-      let imageType = types[i];
-      if (imageType && tag.tagName !== 'IMG' && tag.tagName !== 'VIDEO') {
+      let imageType = getBgImageType(tag);
+
+      // Heuristic for elements that might be re-inverted by CSS.
+      const isPotentiallyReInverted =
+        imageType ||
+        tag.getAttribute('role') === 'img' ||
+        tag.hasAttribute('itemprop') ||
+        tag.hasAttribute('data-src') ||
+        tag.hasAttribute('data-canonical-src') ||
+        tag.tagName === 'CANVAS' ||
+        tag.tagName === 'OBJECT' ||
+        tag.tagName === 'EMBED';
+
+      if (isPotentiallyReInverted && tag.tagName !== 'IMG' && tag.tagName !== 'VIDEO') {
         const rect = tag.getBoundingClientRect();
-        if (rect.width >= vWidth * 0.5 && rect.height >= vHeight * 0.5) {
+        // If it covers a significant part of the viewport, don't re-invert it.
+        // This prevents white-on-white text issues on large background containers.
+        if (
+          (rect.width >= vWidth * 0.45 && rect.height >= 100) ||
+          (rect.height >= vHeight * 0.45 && rect.width >= 100)
+        ) {
           tag.setAttribute('deluminate_re_invert', 'false');
+          // We still want to clear imageType to prevent other CSS rules from catching it.
           imageType = null;
         } else {
           tag.removeAttribute('deluminate_re_invert');
         }
+      } else {
+        tag.removeAttribute('deluminate_re_invert');
       }
+
       if (imageType) {
         tag.setAttribute('deluminate_imageType', imageType);
       } else {
@@ -296,6 +316,7 @@
   function deepImageProcessing() {
     if (deepImageProcessingComplete) return;
     // Use the queue for initial processing too to avoid freezing immediately
+    queueForProcessing([document.documentElement, document.body]);
     queueForProcessing(document.querySelectorAll('body *'));
     deepImageProcessingComplete = true;
   }
