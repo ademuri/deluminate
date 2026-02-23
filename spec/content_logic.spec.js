@@ -171,6 +171,35 @@ describe('Content Logic', () => {
     dom.window.getComputedStyle = originalGetComputedStyle;
   });
 
+  it('markCssImages ignores large background elements', () => {
+    const div = document.createElement('div');
+    const originalGetComputedStyle = dom.window.getComputedStyle;
+
+    // Mock window dimensions
+    dom.window.innerWidth = 1000;
+    dom.window.innerHeight = 1000;
+
+    // Small element - should be marked
+    div.getBoundingClientRect = () => ({ width: 100, height: 100 });
+    dom.window.getComputedStyle = () => ({ 'background-image': 'url("image.jpg")' });
+    logic.markCssImages(div);
+    expect(div.getAttribute('deluminate_imageType')).toBe('jpg');
+
+    // Large element - should NOT be marked
+    div.getBoundingClientRect = () => ({ width: 900, height: 900 });
+    logic.markCssImages(div);
+    expect(div.hasAttribute('deluminate_imageType')).toBe(false);
+
+    // Large IMG element - should ALWAYS be marked (images are content)
+    const img = document.createElement('img');
+    img.getBoundingClientRect = () => ({ width: 900, height: 900 });
+    dom.window.getComputedStyle = () => ({ 'background-image': 'url("image.jpg")' });
+    logic.markCssImages(img);
+    expect(img.getAttribute('deluminate_imageType')).toBe('jpg');
+
+    dom.window.getComputedStyle = originalGetComputedStyle;
+  });
+
   it('classifyTextColor uses TreeWalker when few paragraphs found', () => {
     // Clear document
     document.body.innerHTML = '';

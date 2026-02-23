@@ -123,7 +123,13 @@
   }
 
   function markCssImages(tag) {
-    const imageType = getBgImageType(tag);
+    let imageType = getBgImageType(tag);
+    if (imageType && tag.tagName !== 'IMG' && tag.tagName !== 'VIDEO') {
+      const { width, height } = tag.getBoundingClientRect();
+      if (width > window.innerWidth * 0.5 && height > window.innerHeight * 0.5) {
+        imageType = null;
+      }
+    }
     if (imageType) {
       tag.setAttribute('deluminate_imageType', imageType);
     } else {

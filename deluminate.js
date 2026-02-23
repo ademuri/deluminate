@@ -219,9 +219,18 @@
   function processElements(elements) {
     if (!getBgImageType) return;
     const types = Array.prototype.map.call(elements, getBgImageType);
+    const vWidth = window.innerWidth;
+    const vHeight = window.innerHeight;
+
     for (let i = 0; i < elements.length; i++) {
       const tag = elements[i];
-      const imageType = types[i];
+      let imageType = types[i];
+      if (imageType && tag.tagName !== 'IMG' && tag.tagName !== 'VIDEO') {
+        const rect = tag.getBoundingClientRect();
+        if (rect.width >= vWidth * 0.5 && rect.height >= vHeight * 0.5) {
+          imageType = null;
+        }
+      }
       if (imageType) {
         tag.setAttribute('deluminate_imageType', imageType);
       } else {
