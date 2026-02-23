@@ -184,11 +184,19 @@ describe('Content Logic', () => {
     dom.window.getComputedStyle = () => ({ 'background-image': 'url("image.jpg")' });
     logic.markCssImages(div);
     expect(div.getAttribute('deluminate_imageType')).toBe('jpg');
+    expect(div.hasAttribute('deluminate_re_invert')).toBe(false);
 
-    // Large element - should NOT be marked
+    // Large element - should NOT be marked, and should have re_invert="false"
     div.getBoundingClientRect = () => ({ width: 900, height: 900 });
     logic.markCssImages(div);
     expect(div.hasAttribute('deluminate_imageType')).toBe(false);
+    expect(div.getAttribute('deluminate_re_invert')).toBe('false');
+
+    // Make small again - should clear re_invert
+    div.getBoundingClientRect = () => ({ width: 100, height: 100 });
+    logic.markCssImages(div);
+    expect(div.getAttribute('deluminate_imageType')).toBe('jpg');
+    expect(div.hasAttribute('deluminate_re_invert')).toBe(false);
 
     // Large IMG element - should ALWAYS be marked (images are content)
     const img = document.createElement('img');

@@ -127,7 +127,10 @@
     if (imageType && tag.tagName !== 'IMG' && tag.tagName !== 'VIDEO') {
       const { width, height } = tag.getBoundingClientRect();
       if (width > window.innerWidth * 0.5 && height > window.innerHeight * 0.5) {
+        tag.setAttribute('deluminate_re_invert', 'false');
         imageType = null;
+      } else {
+        tag.removeAttribute('deluminate_re_invert');
       }
     }
     if (imageType) {

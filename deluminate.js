@@ -228,7 +228,10 @@
       if (imageType && tag.tagName !== 'IMG' && tag.tagName !== 'VIDEO') {
         const rect = tag.getBoundingClientRect();
         if (rect.width >= vWidth * 0.5 && rect.height >= vHeight * 0.5) {
+          tag.setAttribute('deluminate_re_invert', 'false');
           imageType = null;
+        } else {
+          tag.removeAttribute('deluminate_re_invert');
         }
       }
       if (imageType) {
@@ -293,7 +296,7 @@
   function deepImageProcessing() {
     if (deepImageProcessingComplete) return;
     // Use the queue for initial processing too to avoid freezing immediately
-    queueForProcessing(document.querySelectorAll('body *:not([style*="url"])'));
+    queueForProcessing(document.querySelectorAll('body *'));
     deepImageProcessingComplete = true;
   }
 
@@ -361,10 +364,10 @@
         for (let j = 0; j < mutations[i].addedNodes.length; ++j) {
           const newTag = mutations[i].addedNodes[j];
           if (newTag.querySelectorAll) {
-            if (newTag.nodeType === Node.ELEMENT_NODE && !newTag.matches('[style*="url"]')) {
+            if (newTag.nodeType === Node.ELEMENT_NODE) {
               elementsToProcess.push(newTag);
             }
-            const descendants = newTag.querySelectorAll('*:not([style*="url"])');
+            const descendants = newTag.querySelectorAll('*');
             for (let k = 0; k < descendants.length; k++) {
               elementsToProcess.push(descendants[k]);
             }

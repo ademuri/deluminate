@@ -86,6 +86,11 @@ html[hc^='noinvert-dim5'][hc*='low-contrast'] {
 
 /* Uninvert select items within the document. */
 
+/* Prevent re-inversion if explicitly disabled by JS (e.g. for large backgrounds) */
+[deluminate_re_invert='false'] {
+  filter: none !important;
+}
+
 /* For the -noimg variant, uninvert all images. */
 html[hc*="delumine-noimg"]:not([hc*="dynamic"][looks-dark]) :is(
 img,
