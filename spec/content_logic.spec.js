@@ -187,7 +187,7 @@ describe('Content Logic', () => {
     expect(div.hasAttribute('deluminate_re_invert')).toBe(false);
 
     // Large element - should NOT be marked, and should have re_invert="false"
-    div.getBoundingClientRect = () => ({ width: 900, height: 900 });
+    div.getBoundingClientRect = () => ({ width: 300, height: 300 });
     logic.markCssImages(div);
     expect(div.hasAttribute('deluminate_imageType')).toBe(false);
     expect(div.getAttribute('deluminate_re_invert')).toBe('false');
@@ -195,7 +195,7 @@ describe('Content Logic', () => {
     // Element with role="img" but NO background-image
     const roleDiv = document.createElement('div');
     roleDiv.setAttribute('role', 'img');
-    roleDiv.getBoundingClientRect = () => ({ width: 900, height: 900 });
+    roleDiv.getBoundingClientRect = () => ({ width: 300, height: 300 });
     dom.window.getComputedStyle = () => ({ 'background-image': 'none' });
     logic.markCssImages(roleDiv);
     expect(roleDiv.getAttribute('deluminate_re_invert')).toBe('false');

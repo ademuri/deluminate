@@ -7,64 +7,79 @@
   let animGifHandler;
   let newImageHandler;
   let darkDetectionHandler;
-  let darkDetectionTimer;
-  let rootWatcher;
-  const rootAttribute = 'hc';
-
-  const { getBgImageType, classifyTextColor, checksPreferredScheme } = window.deluminateLogic || {};
-
-  function onExtensionMessage(request, sender, sendResponse) {
-    if (chrome.runtime.lastError) {
-      console.log(`Failed to communicate init request`);
-    }
-    if (request.target === 'offscreen') return;
-    if (request.pingTab) {
-      if (sendResponse) sendResponse(true);
-      return;
-    }
-    if (request['manual_css']) {
-      addCSSLink();
-      return;
-    }
-    if (rootWatcher) {
-      rootWatcher.disconnect();
-    }
-    if (request.enabled && request.scheme != 'normal') {
-      const hc = scheme_prefix + request.scheme + ' ' + request.modifiers.join(' ');
-      document.documentElement.setAttribute(rootAttribute, hc);
-      rootWatcher = new MutationObserver((mutationList) => {
-        if (checkDisconnected()) return;
-        for (const mutation of mutationList) {
-          if (mutation.type === 'attributes' && mutation.attributeName === rootAttribute) {
-            const newValue = document.documentElement.getAttribute(rootAttribute);
-            if (newValue === null) {
-              document.documentElement.setAttribute(rootAttribute, hc);
+    let darkDetectionTimer;
+    let rootWatcher;
+    let sizeWatcher;
+    const rootAttribute = 'hc';
+  
+    const { classifyTextColor, checksPreferredScheme, markCssImages } = window.deluminateLogic || {};
+  
+    function onExtensionMessage(request, sender, sendResponse) {
+      if (chrome.runtime.lastError) {
+        console.log(`Failed to communicate init request`);
+      }
+      if (request.target === 'offscreen') return;
+      if (request.pingTab) {
+        if (sendResponse) sendResponse(true);
+        return;
+      }
+      if (request['manual_css']) {
+        addCSSLink();
+        return;
+      }
+      if (rootWatcher) {
+        rootWatcher.disconnect();
+      }
+      if (sizeWatcher) {
+        sizeWatcher.disconnect();
+      }
+      if (request.enabled && request.scheme != 'normal') {
+        const hc = scheme_prefix + request.scheme + ' ' + request.modifiers.join(' ');
+        document.documentElement.setAttribute(rootAttribute, hc);
+        rootWatcher = new MutationObserver((mutationList) => {
+          if (checkDisconnected()) return;
+          for (const mutation of mutationList) {
+            if (mutation.type === 'attributes' && mutation.attributeName === rootAttribute) {
+              const newValue = document.documentElement.getAttribute(rootAttribute);
+              if (newValue === null) {
+                document.documentElement.setAttribute(rootAttribute, hc);
+              }
             }
           }
-        }
-      });
-      rootWatcher.observe(document.documentElement, { attributes: true });
-      setupFullscreenWorkaround();
-    } else {
-      document.documentElement.removeAttribute(rootAttribute);
-      removeFullscreenWorkaround();
-    }
-    // Enable advanced image recognition on invert modes except "invert all
-    // images" mode.
-    if (
-      request.enabled &&
-      request.scheme.indexOf('delumine') >= 0 &&
-      request.scheme.indexOf('delumine-all') < 0 &&
-      request.modifiers.indexOf('ignorebg') < 0
-    ) {
-      afterDomLoaded(restartDeepImageProcessing);
-      newImageHandler.observe(document.documentElement, {
-        childList: true,
-        subtree: true,
-      });
-    } else {
-      newImageHandler.disconnect();
-    }
+        });
+        rootWatcher.observe(document.documentElement, { attributes: true });
+        setupFullscreenWorkaround();
+      } else {
+        document.documentElement.removeAttribute(rootAttribute);
+        removeFullscreenWorkaround();
+      }
+      // Enable advanced image recognition on invert modes except "invert all
+      // images" mode.
+      if (
+        request.enabled &&
+        request.scheme.indexOf('delumine') >= 0 &&
+        request.scheme.indexOf('delumine-all') < 0 &&
+        request.modifiers.indexOf('ignorebg') < 0
+      ) {
+        afterDomLoaded(restartDeepImageProcessing);
+        newImageHandler.observe(document.documentElement, {
+          childList: true,
+          subtree: true,
+          attributes: true,
+          attributeFilter: [
+            'style',
+            'class',
+            'role',
+            'itemprop',
+            'data-src',
+            'data-canonical-src',
+            'data-delayed-url',
+          ],
+        });
+      } else {
+        newImageHandler.disconnect();
+      }
+  
     if (request.modifiers.indexOf('ignorebg') >= 0) {
       newImageHandler.disconnect();
       afterDomLoaded(() => {
@@ -217,48 +232,10 @@
 
   let deepImageProcessingComplete = false;
   function processElements(elements) {
-    if (!getBgImageType) return;
-    const vWidth = window.innerWidth;
-    const vHeight = window.innerHeight;
+    if (!markCssImages) return;
 
     for (let i = 0; i < elements.length; i++) {
-      const tag = elements[i];
-      let imageType = getBgImageType(tag);
-
-      // Heuristic for elements that might be re-inverted by CSS.
-      const isPotentiallyReInverted =
-        imageType ||
-        tag.getAttribute('role') === 'img' ||
-        tag.hasAttribute('itemprop') ||
-        tag.hasAttribute('data-src') ||
-        tag.hasAttribute('data-canonical-src') ||
-        tag.tagName === 'CANVAS' ||
-        tag.tagName === 'OBJECT' ||
-        tag.tagName === 'EMBED';
-
-      if (isPotentiallyReInverted && tag.tagName !== 'IMG' && tag.tagName !== 'VIDEO') {
-        const rect = tag.getBoundingClientRect();
-        // If it covers a significant part of the viewport, don't re-invert it.
-        // This prevents white-on-white text issues on large background containers.
-        if (
-          (rect.width >= vWidth * 0.45 && rect.height >= 100) ||
-          (rect.height >= vHeight * 0.45 && rect.width >= 100)
-        ) {
-          tag.setAttribute('deluminate_re_invert', 'false');
-          // We still want to clear imageType to prevent other CSS rules from catching it.
-          imageType = null;
-        } else {
-          tag.removeAttribute('deluminate_re_invert');
-        }
-      } else {
-        tag.removeAttribute('deluminate_re_invert');
-      }
-
-      if (imageType) {
-        tag.setAttribute('deluminate_imageType', imageType);
-      } else {
-        tag.removeAttribute('deluminate_imageType');
-      }
+      markCssImages(elements[i]);
     }
   }
 
@@ -316,8 +293,19 @@
   function deepImageProcessing() {
     if (deepImageProcessingComplete) return;
     // Use the queue for initial processing too to avoid freezing immediately
-    queueForProcessing([document.documentElement, document.body]);
-    queueForProcessing(document.querySelectorAll('body *'));
+    const elements = [document.documentElement, document.body];
+    queueForProcessing(elements);
+    const bodyElements = document.querySelectorAll('body *');
+    queueForProcessing(bodyElements);
+
+    if (sizeWatcher) {
+      sizeWatcher.observe(document.documentElement);
+      sizeWatcher.observe(document.body);
+      for (const el of bodyElements) {
+        sizeWatcher.observe(el);
+      }
+    }
+
     deepImageProcessingComplete = true;
   }
 
@@ -382,15 +370,26 @@
       if (checkDisconnected()) return;
       const elementsToProcess = [];
       for (let i = 0; i < mutations.length; ++i) {
+        if (mutations[i].type === 'attributes') {
+          if (mutations[i].target.nodeType === Node.ELEMENT_NODE) {
+            elementsToProcess.push(mutations[i].target);
+          }
+          continue;
+        }
+        if (mutations[i].target.nodeType === Node.ELEMENT_NODE) {
+          elementsToProcess.push(mutations[i].target);
+        }
         for (let j = 0; j < mutations[i].addedNodes.length; ++j) {
           const newTag = mutations[i].addedNodes[j];
           if (newTag.querySelectorAll) {
             if (newTag.nodeType === Node.ELEMENT_NODE) {
               elementsToProcess.push(newTag);
+              sizeWatcher?.observe(newTag);
             }
             const descendants = newTag.querySelectorAll('*');
             for (let k = 0; k < descendants.length; k++) {
               elementsToProcess.push(descendants[k]);
+              sizeWatcher?.observe(descendants[k]);
             }
           }
         }
@@ -406,6 +405,19 @@
       darkDetectionTimer = setTimeout(detectAlreadyDark, 500);
     });
 
+    if (typeof ResizeObserver !== 'undefined') {
+      sizeWatcher = new ResizeObserver((entries) => {
+        if (checkDisconnected()) return;
+        const elementsToProcess = [];
+        for (const entry of entries) {
+          elementsToProcess.push(entry.target);
+        }
+        if (elementsToProcess.length > 0) {
+          queueForProcessing(elementsToProcess);
+        }
+      });
+    }
+
     chrome.runtime.onMessage.addListener(onExtensionMessage);
     chrome.runtime.sendMessage(
       { init: true, url: window.document.baseURI },
@@ -418,7 +430,13 @@
   }
 
   function unloadAll() {
-    const watchers = [animGifHandler, newImageHandler, darkDetectionHandler, rootWatcher];
+    const watchers = [
+      animGifHandler,
+      newImageHandler,
+      darkDetectionHandler,
+      rootWatcher,
+      sizeWatcher,
+    ];
     for (const watcher of watchers) {
       if (watcher?.disconnect) {
         watcher.disconnect();

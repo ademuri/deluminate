@@ -131,6 +131,7 @@
       tag.hasAttribute('itemprop') ||
       tag.hasAttribute('data-src') ||
       tag.hasAttribute('data-canonical-src') ||
+      tag.hasAttribute('data-delayed-url') ||
       tag.tagName === 'CANVAS' ||
       tag.tagName === 'OBJECT' ||
       tag.tagName === 'EMBED';
@@ -140,7 +141,7 @@
       const vWidth = window.innerWidth;
       const vHeight = window.innerHeight;
 
-      if ((width >= vWidth * 0.45 && height >= 100) || (height >= vHeight * 0.45 && width >= 100)) {
+      if ((width >= vWidth * 0.15 && height >= 50) || (height >= vHeight * 0.15 && width >= 50)) {
         tag.setAttribute('deluminate_re_invert', 'false');
         imageType = null;
       } else {
