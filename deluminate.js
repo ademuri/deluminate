@@ -7,79 +7,79 @@
   let animGifHandler;
   let newImageHandler;
   let darkDetectionHandler;
-    let darkDetectionTimer;
-    let rootWatcher;
-    let sizeWatcher;
-    const rootAttribute = 'hc';
-  
-    const { classifyTextColor, checksPreferredScheme, markCssImages } = window.deluminateLogic || {};
-  
-    function onExtensionMessage(request, sender, sendResponse) {
-      if (chrome.runtime.lastError) {
-        console.log(`Failed to communicate init request`);
-      }
-      if (request.target === 'offscreen') return;
-      if (request.pingTab) {
-        if (sendResponse) sendResponse(true);
-        return;
-      }
-      if (request['manual_css']) {
-        addCSSLink();
-        return;
-      }
-      if (rootWatcher) {
-        rootWatcher.disconnect();
-      }
-      if (sizeWatcher) {
-        sizeWatcher.disconnect();
-      }
-      if (request.enabled && request.scheme != 'normal') {
-        const hc = scheme_prefix + request.scheme + ' ' + request.modifiers.join(' ');
-        document.documentElement.setAttribute(rootAttribute, hc);
-        rootWatcher = new MutationObserver((mutationList) => {
-          if (checkDisconnected()) return;
-          for (const mutation of mutationList) {
-            if (mutation.type === 'attributes' && mutation.attributeName === rootAttribute) {
-              const newValue = document.documentElement.getAttribute(rootAttribute);
-              if (newValue === null) {
-                document.documentElement.setAttribute(rootAttribute, hc);
-              }
+  let darkDetectionTimer;
+  let rootWatcher;
+  let sizeWatcher;
+  const rootAttribute = 'hc';
+
+  const { classifyTextColor, checksPreferredScheme, markCssImages } = window.deluminateLogic || {};
+
+  function onExtensionMessage(request, sender, sendResponse) {
+    if (chrome.runtime.lastError) {
+      console.log(`Failed to communicate init request`);
+    }
+    if (request.target === 'offscreen') return;
+    if (request.pingTab) {
+      if (sendResponse) sendResponse(true);
+      return;
+    }
+    if (request['manual_css']) {
+      addCSSLink();
+      return;
+    }
+    if (rootWatcher) {
+      rootWatcher.disconnect();
+    }
+    if (sizeWatcher) {
+      sizeWatcher.disconnect();
+    }
+    if (request.enabled && request.scheme != 'normal') {
+      const hc = scheme_prefix + request.scheme + ' ' + request.modifiers.join(' ');
+      document.documentElement.setAttribute(rootAttribute, hc);
+      rootWatcher = new MutationObserver((mutationList) => {
+        if (checkDisconnected()) return;
+        for (const mutation of mutationList) {
+          if (mutation.type === 'attributes' && mutation.attributeName === rootAttribute) {
+            const newValue = document.documentElement.getAttribute(rootAttribute);
+            if (newValue === null) {
+              document.documentElement.setAttribute(rootAttribute, hc);
             }
           }
-        });
-        rootWatcher.observe(document.documentElement, { attributes: true });
-        setupFullscreenWorkaround();
-      } else {
-        document.documentElement.removeAttribute(rootAttribute);
-        removeFullscreenWorkaround();
-      }
-      // Enable advanced image recognition on invert modes except "invert all
-      // images" mode.
-      if (
-        request.enabled &&
-        request.scheme.indexOf('delumine') >= 0 &&
-        request.scheme.indexOf('delumine-all') < 0 &&
-        request.modifiers.indexOf('ignorebg') < 0
-      ) {
-        afterDomLoaded(restartDeepImageProcessing);
-        newImageHandler.observe(document.documentElement, {
-          childList: true,
-          subtree: true,
-          attributes: true,
-          attributeFilter: [
-            'style',
-            'class',
-            'role',
-            'itemprop',
-            'data-src',
-            'data-canonical-src',
-            'data-delayed-url',
-          ],
-        });
-      } else {
-        newImageHandler.disconnect();
-      }
-  
+        }
+      });
+      rootWatcher.observe(document.documentElement, { attributes: true });
+      setupFullscreenWorkaround();
+    } else {
+      document.documentElement.removeAttribute(rootAttribute);
+      removeFullscreenWorkaround();
+    }
+    // Enable advanced image recognition on invert modes except "invert all
+    // images" mode.
+    if (
+      request.enabled &&
+      request.scheme.indexOf('delumine') >= 0 &&
+      request.scheme.indexOf('delumine-all') < 0 &&
+      request.modifiers.indexOf('ignorebg') < 0
+    ) {
+      afterDomLoaded(restartDeepImageProcessing);
+      newImageHandler.observe(document.documentElement, {
+        childList: true,
+        subtree: true,
+        attributes: true,
+        attributeFilter: [
+          'style',
+          'class',
+          'role',
+          'itemprop',
+          'data-src',
+          'data-canonical-src',
+          'data-delayed-url',
+        ],
+      });
+    } else {
+      newImageHandler.disconnect();
+    }
+
     if (request.modifiers.indexOf('ignorebg') >= 0) {
       newImageHandler.disconnect();
       afterDomLoaded(() => {

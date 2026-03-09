@@ -38,11 +38,17 @@ test('Avoid re-inverting large background elements', async ({ page, server }) =>
   // is ALSO correctly marked and NOT re-inverted thanks to the override
   await expect(styleUrlTest).toHaveAttribute('deluminate_re_invert', 'false', { timeout: 10000 });
 
-  const bgComputedFilter = await bgLayer.evaluate(el => window.getComputedStyle(el).filter);
-  const profileComputedFilter = await profilePhoto.evaluate(el => window.getComputedStyle(el).filter);
-  const styleUrlTestFilter = await styleUrlTest.evaluate(el => window.getComputedStyle(el).filter);
-  const contentColor = await content.evaluate(el => window.getComputedStyle(el).color);
-  const htmlFilter = await page.evaluate(() => window.getComputedStyle(document.documentElement).filter);
+  const bgComputedFilter = await bgLayer.evaluate((el) => window.getComputedStyle(el).filter);
+  const profileComputedFilter = await profilePhoto.evaluate(
+    (el) => window.getComputedStyle(el).filter,
+  );
+  const styleUrlTestFilter = await styleUrlTest.evaluate(
+    (el) => window.getComputedStyle(el).filter,
+  );
+  const contentColor = await content.evaluate((el) => window.getComputedStyle(el).color);
+  const htmlFilter = await page.evaluate(
+    () => window.getComputedStyle(document.documentElement).filter,
+  );
 
   console.log('HTML Filter:', htmlFilter);
   console.log('BG Layer Filter:', bgComputedFilter);
@@ -67,20 +73,20 @@ test('White text on re-inverted background (white-on-white)', async ({ page, ser
 
   // Wait for injection
   await expect(page.locator('html')).toHaveAttribute('hc', /delumine-smart/);
-  
+
   const bgLayer = page.locator('.bg-layer');
   const content = page.locator('.content');
 
   // Verify that bg-layer is NOT re-inverted even though it has role="img"
   await expect(bgLayer).toHaveAttribute('deluminate_re_invert', 'false', { timeout: 10000 });
 
-  const bgComputedFilter = await bgLayer.evaluate(el => window.getComputedStyle(el).filter);
-  const contentColor = await content.evaluate(el => window.getComputedStyle(el).color);
+  const bgComputedFilter = await bgLayer.evaluate((el) => window.getComputedStyle(el).filter);
+  const contentColor = await content.evaluate((el) => window.getComputedStyle(el).color);
 
   // BG Layer should stay inverted (black)
   expect(bgComputedFilter).not.toContain('invert(1)');
   // Content color should be black (which will look white visually due to HTML inversion)
   expect(contentColor).toBe('rgb(0, 0, 0)');
-  
+
   // Visually: White text on Black background. Success.
 });
