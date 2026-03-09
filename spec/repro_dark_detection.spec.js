@@ -17,6 +17,15 @@ describe('Reproduction: Dark Site Detection', () => {
     global.document = dom.window.document;
     global.NodeFilter = dom.window.NodeFilter;
 
+    // Mock matchMedia
+    global.window.matchMedia = (query) => ({
+      matches: false,
+      media: query,
+      onchange: null,
+      addListener: () => {},
+      removeListener: () => {},
+    });
+
     const scriptContent = fs.readFileSync(path.resolve('content_logic.js'), 'utf8');
     const scriptEl = dom.window.document.createElement('script');
     scriptEl.textContent = scriptContent;
@@ -46,6 +55,10 @@ describe('Reproduction: Dark Site Detection', () => {
   });
 
   it("checksPreferredScheme should return true only for 'prefers-color-scheme: dark'", () => {
+    global.window.matchMedia = (query) => ({
+      matches: query === '(prefers-color-scheme: dark)',
+      media: query,
+    });
     Object.defineProperty(document, 'styleSheets', {
       value: [
         {

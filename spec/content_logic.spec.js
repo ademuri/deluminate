@@ -18,6 +18,15 @@ describe('Content Logic', () => {
     global.document = dom.window.document;
     global.NodeFilter = dom.window.NodeFilter;
 
+    // Mock matchMedia
+    global.window.matchMedia = (query) => ({
+      matches: false,
+      media: query,
+      onchange: null,
+      addListener: () => {},
+      removeListener: () => {},
+    });
+
     // Load content_logic.js script content
     const scriptContent = fs.readFileSync(path.resolve('content_logic.js'), 'utf8');
 
@@ -253,6 +262,12 @@ describe('Content Logic', () => {
   });
 
   it('checksPreferredScheme detects media query', () => {
+    // Mock matchMedia to match
+    global.window.matchMedia = (query) => ({
+      matches: query === '(prefers-color-scheme: dark)',
+      media: query,
+    });
+
     // Mock document.styleSheets
     Object.defineProperty(document, 'styleSheets', {
       value: [

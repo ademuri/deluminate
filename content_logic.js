@@ -167,11 +167,13 @@
     const windowHeight = window.innerHeight;
     const charTypes = [0, 0, 0];
     let total = 0;
+    const MAX_CHARS = 16384;
+
     for (const p of paras) {
       const { color, display, visibility } = safeGetComputedStyle(p);
       if (!color || display === 'none' || visibility !== 'visible') continue;
       const { width = 0, height = 0, top = 0 } = p.getBoundingClientRect();
-      if (width * height <= 0 || top > windowHeight) continue;
+      if (width * height <= 0 || top > windowHeight * 3) continue;
 
       const text = p.textContent;
       const textValence = colorValence(color);
@@ -188,12 +190,12 @@
 
       total += text.length;
       // Arbitrarily chosen good-enough threshold.
-      if (total > 4096) break;
+      if (total > MAX_CHARS) break;
     }
 
     // If the previous selectors didn't find much of the page's text, use a
     // treeWalker.
-    if (total <= 4096) {
+    if (total <= MAX_CHARS) {
       const walkerRoot = rootNode.body || rootNode.documentElement || rootNode;
       const treeWalker = (rootNode.ownerDocument || rootNode).createTreeWalker(
         walkerRoot,
@@ -206,7 +208,7 @@
         const { color, display, visibility } = safeGetComputedStyle(elem);
         if (!color || display === 'none' || visibility !== 'visible') continue;
         const { width = 0, height = 0, top = 0 } = elem.getBoundingClientRect();
-        if (width * height <= 0 || top > windowHeight) continue;
+        if (width * height <= 0 || top > windowHeight * 3) continue;
 
         const text = textNode.textContent;
         const textValence = colorValence(color);
@@ -222,21 +224,32 @@
 
         total += text.length;
         // Arbitrarily chosen good-enough threshold.
-        if (total > 4096) break;
+        if (total > MAX_CHARS) break;
       }
     }
-    // If light text is a supermajority of the text, we'll say this page uses
-    // light text overall.
-    if (charTypes[2] > 0 && charTypes[2] >= charTypes[0]) {
+    // If we only found light text on dark backgrounds, it's a dark site.
+    if (charTypes[2] > 0 && charTypes[0] === 0) {
       return 'light';
     }
-    if (charTypes[0] > 0 && charTypes[0] > charTypes[2]) {
+    // If we found both, require a significant majority of light text to call it
+    // a dark site. This avoids false positives on light sites with dark headers.
+    if (charTypes[2] > 200 && charTypes[2] > charTypes[0] * 2) {
+      return 'light';
+    }
+    // If dark text is present and not overwhelmed by light text, it's a light site.
+    if (charTypes[0] > 0 && charTypes[0] * 1.5 > charTypes[2]) {
       return 'dark';
     }
     return null;
   }
 
   function checksPreferredScheme() {
+    if (
+      typeof window !== 'undefined' &&
+      !window.matchMedia?.('(prefers-color-scheme: dark)').matches
+    ) {
+      return false;
+    }
     for (const css of document?.styleSheets ?? []) {
       try {
         for (const m of css.media ?? []) {
